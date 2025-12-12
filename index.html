@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard NBA en Vivo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a237e;
+            --secondary: #3949ab;
+            --positive: #4caf50;
+            --negative: #f44336;
+            --warning: #ff9800;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%);
+            color: #e0e1dd;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* HEADER */
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            background: rgba(26, 35, 126, 0.9);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            background: linear-gradient(90deg, #00b4d8, #90e0ef);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #90e0ef;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+        
+        .live-badge {
+            display: inline-block;
+            background: var(--negative);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+        }
+        
+        /* STATS BAR */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border-left: 5px solid var(--positive);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #90e0ef;
+        }
+        
+        .stat-value {
+            font-size: 2.8rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: white;
+        }
+        
+        .stat-label {
+            color: #cbd5e1;
+            font-size: 1rem;
+        }
+        
+        /* GAME CARDS */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .game-card {
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+        
+        .game-header {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .game-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .game-time {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .game-body {
+            padding: 25px;
+        }
+        
+        .teams-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .team {
+            text-align: center;
+            flex: 1;
+            padding: 15px;
+            border-radius: 15px;
+            background: rgba(15, 23, 42, 0.7);
+            transition: background 0.3s;
+        }
+        
+        .team:hover {
+            background: rgba(15, 23, 42, 0.9);
+        }
+        
+        .team-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: white;
+        }
+        
+        .team-odds {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .odds-positive {
+            color: var(--positive);
+        }
+        
+        .odds-negative {
+            color: var(--negative);
+        }
+        
+        .team-score {
+            font-size: 1.5rem;
+            color: #cbd5e1;
+        }
+        
+        .total-box {
+            background: rgba(59, 130, 246, 0.2);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 0 20px;
+            min-width: 100px;
+        }
+        
+        .total-label {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+        
+        .total-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        /* SPREAD */
+        .spread-row {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(15, 23, 42, 0.7);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        /* QUARTERS */
+        .quarters-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 25px 0;
+        }
+        
+        .quarter-card {
+            background: rgba(15, 23, 42, 0.7);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .quarter-title {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        
+        .quarter-score {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            margin: 5px 0;
+        }
+        
+        .quarter-diff {
+            font-size: 0.9rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        
+        .diff-positive {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--positive);
+        }
+        
+        .diff-negative {
+            background: rgba(244, 67, 54, 0.2);
+            color: var(--negative);
+        }
+        
+        /* RECENT GAMES */
+        .recent-games {
+            margin: 25px 0;
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #90e0ef;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .results-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+        
+        .result-badge {
+            padding: 12px 5px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+        
+        .result-badge:hover {
+            transform: scale(1.1);
+        }
+        
+        .result-win {
+            background: linear-gradient(135deg, var(--positive), #2e7d32);
+            color: white;
+        }
+        
+        .result-loss {
+            background: linear-gradient(135deg, var(--negative), #c62828);
+            color: white;
+        }
+        
+        .result-score {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+        
+        /* RECOMMENDATION */
+        .recommendation {
+            background: linear-gradient(90deg, #ff9800, #ffb74d);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .pick-badge {
+            background: white;
+            color: #ff9800;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .pick-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        /* FOOTER */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+        }
+        
+        .update-info {
+            background: rgba(30, 41, 59, 0.7);
+            padding: 15px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo">🏀</div>
+            <h1>NBA Analytics Dashboard</h1>
+            <p class="subtitle">Predicciones en tiempo real • Análisis EV+ • Machine Learning</p>
+            <div class="live-badge">
+                <i class="fas fa-circle"></i> EN VIVO - Actualizando datos
+            </div>
+        </div>
+        
+        <!-- STATS BAR -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-value">+18.5%</div>
+                <div class="stat-label">EV Total Hoy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-value">78%</div>
+                <div class="stat-label">Precisión Histórica</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-value">4.2%</div>
+                <div class="stat-label">Mejor Edge</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-value">12</div>
+                <div class="stat-label">Juegos Analizados</div>
+            </div>
+        </div>
+        
+        <!-- JUEGO 1 -->
+        <div class="games-grid">
+            <div class="game-card">
+                <div class="game-header">
+                    <div class="game-title">Washington Wizards vs Sacramento Kings</div>
+                    <div class="game-time">HOY • 17:00 ET • Capital One Arena</div>
+                </div>
+                
+                <div class="game-body">
+                    <!-- TEAMS & ODDS -->
+                    <div class="teams-row">
+                        <div class="team">
+                            <div class="team-name">Wizards</div>
+                            <div class="team-odds odds-positive">+525</div>
+                            <div class="team-score">Proyección: 108</div>
+                        </div>
+                        
+                        <div class="total-box">
+                            <div class="total-label">TOTAL</div>
+                            <div class="total-value">231</div>
+                            <div class="total-label">Línea: 229.5</div>
+                        </div>
+                        
+                        <div class="team">
+                            <div class="team-name">Kings</div>
+                            <div class="team-odds odds-negative">-769</div>
+                            <div class="team-score">Proyección: 106</div>
+                        </div>
+                    </div>
+                    
+                    <!-- SPREAD -->
+                    <div class="spread-row">
+                        <div>Spread: -2</div>
+                        <div>+12</div>
+                        <div>-12</div>
+                        <div>+2</div>
+                    </div>
+                    
+                    <!-- QUARTERS -->
+                    <div class="section-title">
+                        <i class="fas fa-chart-bar"></i> Desglose por Cuartos
+                    </div>
+                    <div class="quarters-grid">
+                        <div class="quarter-card">
+                            <div class="quarter-title">1Q</div>
+                            <div class="quarter-score">31</div>
+                            <div class="quarter-diff diff-negative">(-4)</div>
+                        </div>
+                        <div class="quarter-card">
+                            <div class="quarter-title">2Q</div>
+                            <div class="quarter-score">25</div>
+                            <div class="quarter-diff diff-positive">(+1)</div>
+                        </div>
+                        <div class="quarter-card">
+                            <div class="quarter-title">3Q</div>
+                            <div class="quarter-score">27</div>
+                            <div class="quarter-diff diff-positive">(+1)</div>
+                        </div>
+                        <div class="quarter-card">
+                            <div class="quarter-title">4Q</div>
+                            <div class="quarter-score">23</div>
+                            <div class="quarter-diff">(0)</div>
+                        </div>
+                        <div class="quarter-card">
+                            <div class="quarter-title">TOTAL</div>
+                            <div class="quarter-score">106</div>
+                            <div class="quarter-diff">-</div>
+                        </div>
+                    </div>
+                    
+                    <!-- RECENT GAMES -->
+                    <div class="recent-games">
+                        <div class="section-title">
+                            <i class="fas fa-history"></i> Últimos 10 Resultados
+                        </div>
+                        <div class="results-grid">
+                            <div class="result-badge result-loss">
+                                L<div class="result-score">104-112</div>
+                            </div>
+                            <div class="result-badge result-loss">
+                                L<div class="result-score">119-114</div>
+                            </div>
+                            <div class="result-badge result-loss">
+                                L<div class="result-score">109-162</div>
+                            </div>
+                            <div class="result-badge result-loss">
+                                L<div class="result-score">112-115</div>
+                            </div>
+                            <div class="result-badge result-loss">
+                                L<div class="result-score">94-120</div>
+                            </div>
+                            <div class="result-badge result-win">
+                                W<div class="result-score">95-113</div>
+                            </div>
+                            <div class="result-badge result-loss">
+                                L<div class="result-score">105-121</div>
+                            </div>
+                            <div class="result-badge result-loss">
+                                L<div class="result-score">128-107</div>
+                            </div>
+                            <div class="result-badge result-loss">
+                                L<div class="result-score">91-121</div>
+                            </div>
+                            <div class="result-badge result-loss">
+                                L<div class="result-score">109-111</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- RECOMMENDATION -->
+                    <div class="recommendation">
+                        <div class="pick-text">
+                            <i class="fas fa-bullseye"></i> PICK RECOMENDADO: Wizards +2
+                        </div>
+                        <div class="pick-badge">+ PICK</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- JUEGO 2 -->
+            <div class="game-card">
+                <div class="game-header">
+                    <div class="game-title">Boston Celtics vs Miami Heat</div>
+                    <div class="game-time">HOY • 19:30 ET • TD Garden</div>
+                </div>
+                
+                <div class="game-body">
+                    <!-- TEAMS & ODDS -->
+                    <div class="teams-row">
+                        <div class="team">
+                            <div class="team-name">Celtics</div>
+                            <div class="team-odds odds-negative">-588</div>
+                            <div class="team-score">Proyección: 122</div>
+                        </div>
+                        
+                        <div class="total-box">
+                            <div class="total-label">TOTAL</div>
+                            <div class="total-value">213</div>
+                            <div class="total-label">Línea: 215.5</div>
+                        </div>
+                        
+                        <div class="team">
+                            <div class="team-name">Heat</div>
+                            <div class="team-odds odds-positive">+425</div>
+                            <div class="team-score">Proyección: 119</div>
+                        </div>
+                    </div>
+                    
+                    <!-- SPREAD -->
+                    <div class="spread-row">
+                        <div>Spread: -3</div>
+                        <div>-10.5</div>
+                        <div>+10.5</div>
+                        <div>+3</div>
+                    </div>
+                    
+                    <!-- QUARTERS -->
+                    <div class="section-title">
+                        <i class="fas fa-chart-bar"></i> Desglose por Cuartos
+                    </div>
+                    <div class="quarters-grid">
+                        <div class="quarter-card">
+                            <div class="quarter-title">1Q</div>
+                            <div class="quarter-score">33</div>
+                            <div class="quarter-diff diff-negative">(-5)</div>
+                        </div>
+                        <div class="quarter-card">
+                            <div class="quarter-title">2Q</div>
+                            <div class="quarter-score">31</div>
+                            <div class="quarter-diff diff-negative">(-1)</div>
+                        </div>
+                        <div class="quarter-card">
+                            <div class="quarter-title">3Q</div>
+                            <div class="quarter-score">32</div>
+                            <div class="quarter-diff diff-positive">(+1)</div>
+                        </div>
+                        <div class="quarter-card">
+                            <div class="quarter-title">4Q</div>
+                            <div class="quarter-score">25</div>
+                            <div class="quarter-diff diff-positive">(+1)</div>
+                        </div>
+                        <div class="quarter-card">
+                            <div class="quarter-title">TOTAL</div>
+                            <div class="quarter-score">122</div>
+                            <div class="quarter-diff">-</div>
+                        </div>
+                    </div>
+                    
+                    <!-- RECENT GAMES -->
+                    <div class="recent-games">
+                        <div class="section-title">
+                            <i class="fas fa-history"></i> Últimos 10 Resultados
+                        </div>
+                        <div class="results-grid">
+                            <div class="result-badge result-win">
+                                W<div class="result-score">129-116</div>
+                            </div>
+                            <div class="result-badge result-win">
+                                W<div class="result-score">113-95</div>
+                            </div>
+                            <div class="result-badge result-win">
+                                W<div class="result-score">132-102</div>
+                            </div>
+                            <div class="result-badge result-win">
+                                W<div class="result-score">121-111</div>
+                            </div>
+                            <div class="result-badge result-win">
+                                W<div class="result-score">117-103</div>
+                            </div>
+                            <div class="result-badge result-win">
+                                W<div class="result-score">122-105</div>
+                            </div>
+                            <div class="result-badge result-win">
+                                W<div class="result-score">112-86</div>
+                            </div>
+                            <div class="result-badge result-win">
+                                W<div class="result-score">122-112</div>
+                            </div>
+                            <div class="result-badge result-win">
+                                W<div class="result-score">118-95</div>
+                            </div>
+                            <div class="result-badge result-win">
+                                W<div class="result-score">120-94</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- RECOMMENDATION -->
+                    <div class="recommendation">
+                        <div class="pick-text">
+                            <i class="fas fa-bullseye"></i> PICK RECOMENDADO: Celtics -3
+                        </div>
+                        <div class="pick-badge">TOP PICK</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- FOOTER -->
+        <div class="footer">
+            <p>🏀 NBA Analytics Dashboard • v1.0 • Desarrollado con Machine Learning</p>
+            <div class="update-info">
+                <i class="fas fa-sync-alt"></i> Última actualización: 
+                <span id="current-time">Cargando...</span>
+                • Próxima actualización en: <span id="countdown">60</span>s
+            </div>
+            <p style="margin-top: 20px; font-size: 0.9rem; color: #64748b;">
+                Los datos se actualizan automáticamente cada 60 segundos
+            </p>
+        </div>
+    </div>
+
+    <!-- SCRIPT PARA DATOS DINÁMICOS -->
+    <script>
+        // Actualizar hora y contador
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('current-time').textContent = timeStr;
+        }
+        
+        // Contador regresivo
+        let countdown = 60;
+        function updateCountdown() {
+            document.getElementById('countdown').textContent = countdown;
+            countdown--;
+            if (countdown < 0) {
+                countdown = 60;
+                simulateDataUpdate();
+            }
+        }
+        
+        // Simular actualización de datos
+        function simulateDataUpdate() {
+            console.log("📡 Simulando actualización de datos...");
+            
+            // Cambiar odds ligeramente
+            const oddsElements = document.querySelectorAll('.team-odds');
+            oddsElements.forEach(odd => {
+                const currentText = odd.textContent;
+                const currentValue = parseInt(currentText.replace(/[+-]/g, ''));
+                const isPositive = currentText.includes('+');
+                
+                const change = Math.floor(Math.random() * 10) - 5; // -5 a +5
+                let newValue = currentValue + change;
+                
+                if (isPositive) {
+                    newValue = Math.max(100, newValue); // Mínimo +100
+                    odd.textContent = '+' + newValue;
+                    odd.className = 'team-odds odds-positive';
+                } else {
+                    newValue = Math.max(-1000, Math.min(-100, newValue)); // Entre -1000 y -100
+                    odd.textContent = newValue;
+                    odd.className = 'team-odds odds-negative';
+                }
+            });
+            
+            // Actualizar totals
+            const totals = document.querySelectorAll('.total-value');
+            totals.forEach(total => {
+                const current = parseInt(total.textContent);
+                const change = Math.floor(Math.random() * 4) - 2; // -2 a +2
+                total.textContent = current + change;
+            });
+            
+            // Efecto visual de actualización
+            document.querySelector('.live-badge').style.animation = 'none';
+            setTimeout(() => {
+                document.querySelector('.live-badge').style.animation = 'pulse 2s infinite';
+            }, 10);
+        }
+        
+        // Inicializar
+        updateTime();
+        setInterval(updateTime, 1000);
+        setInterval(updateCountdown, 1000);
+        
+        // Actualizar datos cada 30 segundos (simulado)
+        setInterval(simulateDataUpdate, 30000);
+        
+        // Hacer que las cartas se muevan suavemente al pasar el mouse
+        document.querySelectorAll('.game-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateY = (x - centerX) / 25;
+                const rotateX = (centerY - y) / 25;
+                
+                card.style.transform = `
+                    perspective(1000px)
+                    rotateX(${rotateX}deg)
+                    rotateY(${rotateY}deg)
+                    translateY(-10px)
+                `;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+                setTimeout(() => {
+                    card.style.transform = '';
+                }, 300);
+            });
+        });
+        
+        // Inicializar con datos "reales"
+        setTimeout(simulateDataUpdate, 2000);
+    </script>
+</body>
+</html>
