@@ -8,61 +8,61 @@ import warnings
 warnings.filterwarnings('ignore')
 
 class NCAAFPredictor:
-    """Sistema completo de predicción para Arkansas vs Texas Tech"""
+    """Sistema completo de predicción para Central Arkansas vs Vanderbilt"""
     
     def __init__(self):
         print("🎯 SISTEMA DE PREDICCIÓN NCAAB INICIADO")
         print("=" * 50)
-        print("EQUIPOS: Arkansas Razorbacks vs Texas Tech Red Raiders")
+        print("EQUIPOS: Central Arkansas Bears vs Vanderbilt Commodores")
         print("=" * 50)
         
         # Datos específicos del juego
-        self.team_a = "Arkansas Razorbacks"
-        self.team_b = "Texas Tech Red Raiders"
+        self.team_a = "Central Arkansas Bears"
+        self.team_b = "Vanderbilt Commodores"
         
         # Datos ofensivos de la imagen
         self.offensive_stats = {
-            'ARK': {
-                'points_per_game': 87.6,
-                'avg_score_margin': 16.6,
-                'assists_per_game': 17.1,
-                'total_rebounds': 38.9,
-                'effective_fg_pct': 54.2,
-                'off_rebound_pct': 29.6,
-                'fta_per_fga': 0.381,
-                'turnover_pct': 11.2
+            'CARK': {
+                'points_per_game': 69.6,
+                'avg_score_margin': -5.1,
+                'assists_per_game': 14.2,
+                'total_rebounds': 36.0,
+                'effective_fg_pct': 49.3,
+                'off_rebound_pct': 21.7,
+                'fta_per_fga': 0.273,
+                'turnover_pct': 16.2
             },
-            'TTU': {
-                'points_per_game': 81.4,
-                'avg_score_margin': 11.4,
-                'assists_per_game': 15.8,
-                'total_rebounds': 40.3,
-                'effective_fg_pct': 52.6,
-                'off_rebound_pct': 35.8,
-                'fta_per_fga': 0.334,
-                'turnover_pct': 12.9
+            'VAN': {
+                'points_per_game': 96.8,
+                'avg_score_margin': 23.8,
+                'assists_per_game': 20.1,
+                'total_rebounds': 38.9,
+                'effective_fg_pct': 61.2,
+                'off_rebound_pct': 31.7,
+                'fta_per_fga': 0.358,
+                'turnover_pct': 10.9
             }
         }
         
         # Datos defensivos de la imagen
         self.defensive_stats = {
-            'ARK': {
-                'opp_points_per_game': 71.0,
-                'opp_effective_fg_pct': 45.7,
-                'off_rebounds_per_game': 9.6,
-                'def_rebounds_per_game': 25.3,
-                'blocks_per_game': 4.7,
+            'CARK': {
+                'opp_points_per_game': 74.7,
+                'opp_effective_fg_pct': 51.5,
+                'off_rebounds_per_game': 7.7,
+                'def_rebounds_per_game': 24.4,
+                'blocks_per_game': 1.6,
                 'steals_per_game': 8.2,
-                'personal_fouls_per_game': 16.2
+                'personal_fouls_per_game': 16.7
             },
-            'TTU': {
-                'opp_points_per_game': 70.0,
-                'opp_effective_fg_pct': 47.9,
-                'off_rebounds_per_game': 12.9,
-                'def_rebounds_per_game': 24.0,
-                'blocks_per_game': 3.6,
-                'steals_per_game': 7.4,
-                'personal_fouls_per_game': 16.2
+            'VAN': {
+                'opp_points_per_game': 73.0,
+                'opp_effective_fg_pct': 46.3,
+                'off_rebounds_per_game': 9.2,
+                'def_rebounds_per_game': 25.7,
+                'blocks_per_game': 5.4,
+                'steals_per_game': 9.9,
+                'personal_fouls_per_game': 21.1
             }
         }
     
@@ -75,7 +75,7 @@ class NCAAFPredictor:
         # Fórmula: 40% ofensiva + 40% defensiva + 20% eficiencia
         quality_scores = {}
         
-        for team in ['ARK', 'TTU']:
+        for team in ['CARK', 'VAN']:
             # Componente ofensivo (0-100)
             off_rating = (
                 self.offensive_stats[team]['points_per_game'] * 0.3 +
@@ -110,7 +110,7 @@ class NCAAFPredictor:
                 'eff_rating': round(eff_rating / 1.5, 1)
             }
             
-            print(f"{'Arkansas' if team == 'ARK' else 'Texas Tech'}:")
+            print(f"{'Central Arkansas' if team == 'CARK' else 'Vanderbilt'}:")
             print(f"  Rating Total: {quality_scores[team]['rating']}/100")
             print(f"  Ofensivo: {quality_scores[team]['off_rating']}/100")
             print(f"  Defensivo: {quality_scores[team]['def_rating']}/100")
@@ -127,36 +127,36 @@ class NCAAFPredictor:
         # Variables predictoras
         X = np.array([
             # [PTS/G, eFG%, Asist, RebOf%, TOV%, OppPTS, Blk, Rob]
-            [87.6, 54.2, 17.1, 29.6, 11.2, 71.0, 4.7, 8.2],  # Arkansas
-            [81.4, 52.6, 15.8, 35.8, 12.9, 70.0, 3.6, 7.4]   # Texas Tech
+            [69.6, 49.3, 14.2, 21.7, 16.2, 74.7, 1.6, 8.2],  # CARK
+            [96.8, 61.2, 20.1, 31.7, 10.9, 73.0, 5.4, 9.9]   # VAN
         ])
         
         # Variables objetivo (puntos anotados en juegos similares históricos)
-        y = np.array([87.6, 81.4])
+        y = np.array([69.6, 96.8])
         
         # Entrenar modelo
         model = LinearRegression()
         model.fit(X, y)
         
         # Predecir
-        pred_ark = model.predict([X[0]])[0]
-        pred_ttu = model.predict([X[1]])[0]
+        pred_cark = model.predict([X[0]])[0]
+        pred_van = model.predict([X[1]])[0]
         
         # Ajustar por enfrentamiento defensivo
-        def_adjustment_ark = (100 - self.defensive_stats['TTU']['opp_effective_fg_pct'] * 2) / 100
-        def_adjustment_ttu = (100 - self.defensive_stats['ARK']['opp_effective_fg_pct'] * 2) / 100
+        def_adjustment_cark = (100 - self.defensive_stats['VAN']['opp_effective_fg_pct'] * 2) / 100
+        def_adjustment_van = (100 - self.defensive_stats['CARK']['opp_effective_fg_pct'] * 2) / 100
         
-        final_pred_ark = pred_ark * def_adjustment_ark
-        final_pred_ttu = pred_ttu * def_adjustment_ttu
+        final_pred_cark = pred_cark * def_adjustment_cark
+        final_pred_van = pred_van * def_adjustment_van
         
-        print(f"Arkansas Predicción: {final_pred_ark:.1f} puntos")
-        print(f"Texas Tech Predicción: {final_pred_ttu:.1f} puntos")
-        print(f"Diferencia: {final_pred_ark - final_pred_ttu:.1f} puntos")
+        print(f"Central Arkansas Predicción: {final_pred_cark:.1f} puntos")
+        print(f"Vanderbilt Predicción: {final_pred_van:.1f} puntos")
+        print(f"Diferencia: {final_pred_van - final_pred_cark:.1f} puntos")
         
         return {
-            'ark_points': round(final_pred_ark, 1),
-            'ttu_points': round(final_pred_ttu, 1),
-            'margin': round(final_pred_ark - final_pred_ttu, 1)
+            'cark_points': round(final_pred_cark, 1),
+            'van_points': round(final_pred_van, 1),
+            'margin': round(final_pred_van - final_pred_cark, 1)
         }
     
     # ==================== MÓDULO 3: MACHINE LEARNING ENSEMBLE ====================
@@ -181,42 +181,42 @@ class NCAAFPredictor:
                    X_train[:, 5] * 0.1)   # Blk
         y_train += np.random.normal(0, 5, n_samples)  # Ruido
         
-        # Características para Arkansas y Texas Tech
-        X_ark = np.array([[54.2, 11.2, 38.9, 17.1, 8.2, 4.7]])
-        X_ttu = np.array([[52.6, 12.9, 40.3, 15.8, 7.4, 3.6]])
+        # Características para CARK y VAN
+        X_cark = np.array([[49.3, 16.2, 36.0, 14.2, 8.2, 1.6]])
+        X_van = np.array([[61.2, 10.9, 38.9, 20.1, 9.9, 5.4]])
         
         # Modelo 1: Random Forest
         rf = RandomForestRegressor(n_estimators=100, random_state=42)
         rf.fit(X_train, y_train)
-        pred_rf_ark = rf.predict(X_ark)[0]
-        pred_rf_ttu = rf.predict(X_ttu)[0]
+        pred_rf_cark = rf.predict(X_cark)[0]
+        pred_rf_van = rf.predict(X_van)[0]
         
         # Modelo 2: Gradient Boosting
         gb = GradientBoostingRegressor(n_estimators=100, random_state=42)
         gb.fit(X_train, y_train)
-        pred_gb_ark = gb.predict(X_ark)[0]
-        pred_gb_ttu = gb.predict(X_ttu)[0]
+        pred_gb_cark = gb.predict(X_cark)[0]
+        pred_gb_van = gb.predict(X_van)[0]
         
         # Ensemble promedio
-        ensemble_ark = (pred_rf_ark + pred_gb_ark) / 2
-        ensemble_ttu = (pred_rf_ttu + pred_gb_ttu) / 2
+        ensemble_cark = (pred_rf_cark + pred_gb_cark) / 2
+        ensemble_van = (pred_rf_van + pred_gb_van) / 2
         
         # Convertir a puntos
-        base_ark = 87.6
-        base_ttu = 81.4
+        base_cark = 69.6
+        base_van = 96.8
         
-        final_ark = base_ark + (ensemble_ark - 50) / 10
-        final_ttu = base_ttu + (ensemble_ttu - 50) / 10
+        final_cark = base_cark + (ensemble_cark - 50) / 10
+        final_van = base_van + (ensemble_van - 50) / 10
         
-        print(f"Random Forest - ARK: {pred_rf_ark:.1f}, TTU: {pred_rf_ttu:.1f}")
-        print(f"Gradient Boost - ARK: {pred_gb_ark:.1f}, TTU: {pred_gb_ttu:.1f}")
-        print(f"Ensemble Final - ARK: {final_ark:.1f}, TTU: {final_ttu:.1f}")
+        print(f"Random Forest - CARK: {pred_rf_cark:.1f}, VAN: {pred_rf_van:.1f}")
+        print(f"Gradient Boost - CARK: {pred_gb_cark:.1f}, VAN: {pred_gb_van:.1f}")
+        print(f"Ensemble Final - CARK: {final_cark:.1f}, VAN: {final_van:.1f}")
         
         return {
-            'ark_ensemble': round(final_ark, 1),
-            'ttu_ensemble': round(final_ttu, 1),
-            'ensemble_margin': round(final_ark - final_ttu, 1),
-            'model_agreement': round(100 - abs(pred_rf_ark - pred_gb_ark), 1)
+            'cark_ensemble': round(final_cark, 1),
+            'van_ensemble': round(final_van, 1),
+            'ensemble_margin': round(final_van - final_cark, 1),
+            'model_agreement': round(100 - abs(pred_rf_cark - pred_gb_cark), 1)
         }
     
     # ==================== MÓDULO 4: FOUR FACTORS ESTIMADOS ====================
@@ -226,56 +226,56 @@ class NCAAFPredictor:
         print("-" * 40)
         
         # eFG% estimado (considerando defensa rival)
-        efg_ark = (self.offensive_stats['ARK']['effective_fg_pct'] * 0.7 + 
-                   (100 - self.defensive_stats['TTU']['opp_effective_fg_pct']) * 0.3)
+        efg_cark = (self.offensive_stats['CARK']['effective_fg_pct'] * 0.7 + 
+                   (100 - self.defensive_stats['VAN']['opp_effective_fg_pct']) * 0.3)
         
-        efg_ttu = (self.offensive_stats['TTU']['effective_fg_pct'] * 0.7 + 
-                   (100 - self.defensive_stats['ARK']['opp_effective_fg_pct']) * 0.3)
+        efg_van = (self.offensive_stats['VAN']['effective_fg_pct'] * 0.7 + 
+                   (100 - self.defensive_stats['CARK']['opp_effective_fg_pct']) * 0.3)
         
         # TOV% estimado
-        tov_ark = (self.offensive_stats['ARK']['turnover_pct'] * 0.6 + 
-                   self.defensive_stats['TTU']['steals_per_game'] * 0.4)
+        tov_cark = (self.offensive_stats['CARK']['turnover_pct'] * 0.6 + 
+                   self.defensive_stats['VAN']['steals_per_game'] * 0.4)
         
-        tov_ttu = (self.offensive_stats['TTU']['turnover_pct'] * 0.6 + 
-                   self.defensive_stats['ARK']['steals_per_game'] * 0.4)
+        tov_van = (self.offensive_stats['VAN']['turnover_pct'] * 0.6 + 
+                   self.defensive_stats['CARK']['steals_per_game'] * 0.4)
         
         # ORB% estimado
-        orb_ark = (self.offensive_stats['ARK']['off_rebound_pct'] * 0.5 + 
-                   (100 - self.defensive_stats['TTU']['def_rebounds_per_game'] * 2) * 0.5)
+        orb_cark = (self.offensive_stats['CARK']['off_rebound_pct'] * 0.5 + 
+                   (100 - self.defensive_stats['VAN']['def_rebounds_per_game'] * 2) * 0.5)
         
-        orb_ttu = (self.offensive_stats['TTU']['off_rebound_pct'] * 0.5 + 
-                   (100 - self.defensive_stats['ARK']['def_rebounds_per_game'] * 2) * 0.5)
+        orb_van = (self.offensive_stats['VAN']['off_rebound_pct'] * 0.5 + 
+                   (100 - self.defensive_stats['CARK']['def_rebounds_per_game'] * 2) * 0.5)
         
         # FTA/FGA estimado
-        ftr_ark = self.offensive_stats['ARK']['fta_per_fga'] * 100
-        ftr_ttu = self.offensive_stats['TTU']['fta_per_fga'] * 100
+        ftr_cark = self.offensive_stats['CARK']['fta_per_fga'] * 100
+        ftr_van = self.offensive_stats['VAN']['fta_per_fga'] * 100
         
         four_factors = {
-            'ARK': {
-                'efg': round(efg_ark, 1),
-                'tov': round(tov_ark, 1),
-                'orb': round(orb_ark, 1),
-                'ftr': round(ftr_ark, 1)
+            'CARK': {
+                'efg': round(efg_cark, 1),
+                'tov': round(tov_cark, 1),
+                'orb': round(orb_cark, 1),
+                'ftr': round(ftr_cark, 1)
             },
-            'TTU': {
-                'efg': round(efg_ttu, 1),
-                'tov': round(tov_ttu, 1),
-                'orb': round(orb_ttu, 1),
-                'ftr': round(ftr_ttu, 1)
+            'VAN': {
+                'efg': round(efg_van, 1),
+                'tov': round(tov_van, 1),
+                'orb': round(orb_van, 1),
+                'ftr': round(ftr_van, 1)
             }
         }
         
-        print("Arkansas Four Factors:")
-        print(f"  eFG%: {four_factors['ARK']['efg']}%")
-        print(f"  TOV%: {four_factors['ARK']['tov']}%")
-        print(f"  ORB%: {four_factors['ARK']['orb']}%")
-        print(f"  FTR: {four_factors['ARK']['ftr']}")
+        print("Central Arkansas Four Factors:")
+        print(f"  eFG%: {four_factors['CARK']['efg']}%")
+        print(f"  TOV%: {four_factors['CARK']['tov']}%")
+        print(f"  ORB%: {four_factors['CARK']['orb']}%")
+        print(f"  FTR: {four_factors['CARK']['ftr']}")
         
-        print("\nTexas Tech Four Factors:")
-        print(f"  eFG%: {four_factors['TTU']['efg']}%")
-        print(f"  TOV%: {four_factors['TTU']['tov']}%")
-        print(f"  ORB%: {four_factors['TTU']['orb']}%")
-        print(f"  FTR: {four_factors['TTU']['ftr']}")
+        print("\nVanderbilt Four Factors:")
+        print(f"  eFG%: {four_factors['VAN']['efg']}%")
+        print(f"  TOV%: {four_factors['VAN']['tov']}%")
+        print(f"  ORB%: {four_factors['VAN']['orb']}%")
+        print(f"  FTR: {four_factors['VAN']['ftr']}")
         
         return four_factors
     
@@ -287,10 +287,10 @@ class NCAAFPredictor:
         
         # Supongamos odds del mercado (esto vendría de API real)
         market_odds = {
-            'moneyline_ark': -150,  # Arkansas -150
-            'moneyline_ttu': +130,  # Texas Tech +130
-            'spread': -4.5,         # Arkansas -4.5
-            'total': 158.5          # Total Over/Under
+            'moneyline_cark': +450,    # Central Arkansas +450 (underdog)
+            'moneyline_van': -600,     # Vanderbilt -600 (favorito)
+            'spread': 25.5,            # Vanderbilt -25.5
+            'total': 160.5             # Total Over/Under
         }
         
         # Probabilidad de nuestro modelo
@@ -298,19 +298,19 @@ class NCAAFPredictor:
         total = final_prediction['total']
         
         # Calcular probabilidades
-        std_dev = 10.0  # Desviación estándar típica NCAAB
+        std_dev = 12.0  # Desviación estándar ajustada
         
-        # Probabilidad de Arkansas cubriendo -4.5
-        z_score_spread = (margin - (-4.5)) / std_dev
-        prob_cover_ark = self._normal_cdf(z_score_spread)
+        # Probabilidad de Vanderbilt cubriendo -25.5
+        z_score_spread = (margin - 25.5) / std_dev
+        prob_cover_van = self._normal_cdf(z_score_spread)
         
         # Probabilidad de Over/Under
-        z_score_total = (total - 158.5) / std_dev
+        z_score_total = (total - 160.5) / std_dev
         prob_over = 1 - self._normal_cdf(z_score_total)
         
         # Probabilidad de ganador directo
-        prob_win_ark = self._normal_cdf(margin / std_dev)
-        prob_win_ttu = 1 - prob_win_ark
+        prob_win_van = self._normal_cdf(margin / std_dev)
+        prob_win_cark = 1 - prob_win_van
         
         # Convertir odds a probabilidad implícita
         def implied_probability(american_odds):
@@ -320,8 +320,8 @@ class NCAAFPredictor:
                 return abs(american_odds) / (abs(american_odds) + 100)
         
         # Calcular EV para cada mercado
-        ev_spread_ark = (prob_cover_ark - implied_probability(-110)) * 100  # Spread usa -110 típico
-        ev_moneyline_ark = (prob_win_ark - implied_probability(-150)) * 100
+        ev_spread_van = (prob_cover_van - implied_probability(-110)) * 100
+        ev_moneyline_cark = (prob_win_cark - implied_probability(+450)) * 100
         ev_total_over = (prob_over - implied_probability(-110)) * 100
         
         # Criterio Kelly
@@ -334,20 +334,20 @@ class NCAAFPredictor:
             kelly = (b * win_prob - q) / b
             return max(0, min(kelly * 0.5, 0.25))  # Fractional Kelly conservador
         
-        kelly_spread = kelly_criterion(prob_cover_ark, -110)
-        kelly_moneyline = kelly_criterion(prob_win_ark, -150)
+        kelly_spread = kelly_criterion(prob_cover_van, -110)
+        kelly_moneyline = kelly_criterion(prob_win_cark, +450)
         kelly_total = kelly_criterion(prob_over, -110)
         
         ev_results = {
             'probabilities': {
-                'ark_win': round(prob_win_ark * 100, 1),
-                'ttu_win': round(prob_win_ttu * 100, 1),
-                'ark_cover': round(prob_cover_ark * 100, 1),
+                'cark_win': round(prob_win_cark * 100, 1),
+                'van_win': round(prob_win_van * 100, 1),
+                'van_cover': round(prob_cover_van * 100, 1),
                 'over': round(prob_over * 100, 1)
             },
             'expected_value': {
-                'spread_ev': round(ev_spread_ark, 2),
-                'moneyline_ev': round(ev_moneyline_ark, 2),
+                'spread_ev': round(ev_spread_van, 2),
+                'moneyline_ev': round(ev_moneyline_cark, 2),
                 'total_ev': round(ev_total_over, 2)
             },
             'kelly_criterion': {
@@ -358,16 +358,16 @@ class NCAAFPredictor:
             'market_odds': market_odds
         }
         
-        print(f"Probabilidad Arkansas gane: {ev_results['probabilities']['ark_win']}%")
-        print(f"Probabilidad cubra -4.5: {ev_results['probabilities']['ark_cover']}%")
-        print(f"Probabilidad Over 158.5: {ev_results['probabilities']['over']}%")
+        print(f"Probabilidad Vanderbilt gane: {ev_results['probabilities']['van_win']}%")
+        print(f"Probabilidad cubra -25.5: {ev_results['probabilities']['van_cover']}%")
+        print(f"Probabilidad Over 160.5: {ev_results['probabilities']['over']}%")
         print(f"\nExpected Value (EV):")
         print(f"  Spread: {ev_results['expected_value']['spread_ev']}%")
-        print(f"  Moneyline: {ev_results['expected_value']['moneyline_ev']}%")
+        print(f"  Moneyline CARK: {ev_results['expected_value']['moneyline_ev']}%")
         print(f"  Total: {ev_results['expected_value']['total_ev']}%")
         print(f"\nCriterio Kelly (% bankroll):")
         print(f"  Spread: {ev_results['kelly_criterion']['spread_kelly']}%")
-        print(f"  Moneyline: {ev_results['kelly_criterion']['moneyline_kelly']}%")
+        print(f"  Moneyline CARK: {ev_results['kelly_criterion']['moneyline_kelly']}%")
         print(f"  Total: {ev_results['kelly_criterion']['total_kelly']}%")
         
         return ev_results
@@ -379,38 +379,38 @@ class NCAAFPredictor:
         print("=" * 50)
         
         # Consolidar predicciones
-        ark_points_final = (linear_pred['ark_points'] * 0.4 + 
-                           ensemble_pred['ark_ensemble'] * 0.4 + 
-                           quality_scores['ARK']['rating'] * 0.2)
+        cark_points_final = (linear_pred['cark_points'] * 0.4 + 
+                            ensemble_pred['cark_ensemble'] * 0.4 + 
+                            quality_scores['CARK']['rating'] * 0.2)
         
-        ttu_points_final = (linear_pred['ttu_points'] * 0.4 + 
-                           ensemble_pred['ttu_ensemble'] * 0.4 + 
-                           quality_scores['TTU']['rating'] * 0.2)
+        van_points_final = (linear_pred['van_points'] * 0.4 + 
+                           ensemble_pred['van_ensemble'] * 0.4 + 
+                           quality_scores['VAN']['rating'] * 0.2)
         
         # Margen final
-        margin_final = ark_points_final - ttu_points_final
+        margin_final = van_points_final - cark_points_final
         
         # Total final
-        total_final = ark_points_final + ttu_points_final
+        total_final = cark_points_final + van_points_final
         
         # Grado de confianza (0-100%)
         confidence = min(100, max(0, 
-            (quality_scores['ARK']['rating'] - quality_scores['TTU']['rating']) * 0.5 +
-            abs(margin_final) * 2 +
+            (quality_scores['VAN']['rating'] - quality_scores['CARK']['rating']) * 0.5 +
+            abs(margin_final) * 1.5 +
             ensemble_pred['model_agreement']
         ))
         
         # Determinar ganador
         if margin_final > 0:
-            winner = "Arkansas Razorbacks"
-            winner_confidence = (ark_points_final / (ark_points_final + ttu_points_final)) * 100
+            winner = "Vanderbilt Commodores"
+            winner_confidence = (van_points_final / (van_points_final + cark_points_final)) * 100
         else:
-            winner = "Texas Tech Red Raiders"
-            winner_confidence = (ttu_points_final / (ark_points_final + ttu_points_final)) * 100
+            winner = "Central Arkansas Bears"
+            winner_confidence = (cark_points_final / (van_points_final + cark_points_final)) * 100
         
         final_pred = {
-            'arkansas_score': round(ark_points_final, 1),
-            'texas_tech_score': round(ttu_points_final, 1),
+            'central_arkansas_score': round(cark_points_final, 1),
+            'vanderbilt_score': round(van_points_final, 1),
             'margin': round(margin_final, 1),
             'total': round(total_final, 1),
             'winner': winner,
@@ -421,7 +421,7 @@ class NCAAFPredictor:
         
         # Mostrar resultados
         print(f"🏆 RESULTADO PREDICHO: {winner}")
-        print(f"📊 Puntuación Final: {final_pred['arkansas_score']} - {final_pred['texas_tech_score']}")
+        print(f"📊 Puntuación Final: {final_pred['central_arkansas_score']} - {final_pred['vanderbilt_score']}")
         print(f"📈 Margen: {final_pred['margin']} puntos")
         print(f"🎯 Total: {final_pred['total']} puntos")
         print(f"💪 Grado de Confianza: {final_pred['confidence_score']}%")
@@ -442,32 +442,32 @@ class NCAAFPredictor:
         """Genera recomendaciones de apuestas"""
         recommendations = []
         
-        # Spread recomendación
-        if margin > 4.5:
-            recommendations.append("📈 SPREAD: Arkansas -4.5 (RECOMENDADO)")
-        elif margin < -4.5:
-            recommendations.append("📈 SPREAD: Texas Tech +4.5 (RECOMENDADO)")
+        # Spread recomendación (Vanderbilt -25.5)
+        if margin > 25.5:
+            recommendations.append("📈 SPREAD: Vanderbilt -25.5 (RECOMENDADO)")
+        elif margin < 25.5:
+            recommendations.append("📈 SPREAD: Central Arkansas +25.5 (RECOMENDADO)")
         else:
             recommendations.append("📈 SPREAD: No bet (margen muy cercano)")
         
         # Total recomendación
-        if total > 158.5:
-            recommendations.append("🎯 TOTAL: Over 158.5 (RECOMENDADO)")
+        if total > 160.5:
+            recommendations.append("🎯 TOTAL: Over 160.5 (RECOMENDADO)")
         else:
-            recommendations.append("🎯 TOTAL: Under 158.5 (RECOMENDADO)")
+            recommendations.append("🎯 TOTAL: Under 160.5 (RECOMENDADO)")
         
         # Moneyline recomendación
-        if margin > 0 and confidence > 60:
-            recommendations.append("💰 MONEYLINE: Arkansas (VALOR POSITIVO)")
+        if margin > 0 and confidence > 70:
+            recommendations.append("💰 MONEYLINE: Vanderbilt (ALTA CONFIANZA)")
         elif margin < 0 and confidence > 60:
-            recommendations.append("💰 MONEYLINE: Texas Tech (VALOR POSITIVO)")
+            recommendations.append("💰 MONEYLINE: Central Arkansas (VALOR POSITIVO)")
         else:
-            recommendations.append("💰 MONEYLINE: Evitar (poco valor)")
+            recommendations.append("💰 MONEYLINE: Evitar (riesgo elevado)")
         
         # Kelly sizing
-        if confidence > 70:
-            recommendations.append("⚡ TAMAÑO: 3-5% bankroll (ALTA CONFIANZA)")
-        elif confidence > 50:
+        if confidence > 80:
+            recommendations.append("⚡ TAMAÑO: 2-3% bankroll (ALTA CONFIANZA)")
+        elif confidence > 60:
             recommendations.append("⚡ TAMAÑO: 1-2% bankroll (MEDIA CONFIANZA)")
         else:
             recommendations.append("⚡ TAMAÑO: 0.5% bankroll (BAJA CONFIANZA)")
@@ -522,11 +522,11 @@ if __name__ == "__main__":
     print("=" * 60)
     print(f"🏀 {results['game_info']['home']} vs {results['game_info']['away']}")
     print(f"🏆 Ganador Predicho: {results['final_prediction']['winner']}")
-    print(f"📊 Puntuación: {results['final_prediction']['arkansas_score']}-{results['final_prediction']['texas_tech_score']}")
+    print(f"📊 Puntuación: {results['final_prediction']['central_arkansas_score']}-{results['final_prediction']['vanderbilt_score']}")
     print(f"📈 Margen: {results['final_prediction']['margin']} puntos")
     print(f"🎯 Total: {results['final_prediction']['total']} puntos")
     print(f"💪 Confianza: {results['final_prediction']['confidence_score']}%")
-    print(f"💰 Mejor EV: {results['ev_analysis']['expected_value']['spread_ev']}% (Spread)")
+    print(f"💰 Mejor EV: {max(results['ev_analysis']['expected_value'].values())}%")
     print("=" * 60)
     
     # Guardar resultados en archivo
