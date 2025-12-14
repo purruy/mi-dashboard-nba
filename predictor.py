@@ -8,61 +8,61 @@ import warnings
 warnings.filterwarnings('ignore')
 
 class NCAAFPredictor:
-    """Sistema completo de predicción para Central Arkansas vs Vanderbilt"""
+    """Sistema completo de predicción para Alabama vs Arizona"""
     
     def __init__(self):
         print("🎯 SISTEMA DE PREDICCIÓN NCAAB INICIADO")
         print("=" * 50)
-        print("EQUIPOS: Central Arkansas Bears vs Vanderbilt Commodores")
+        print("EQUIPOS: Alabama Crimson Tide vs Arizona Wildcats")
         print("=" * 50)
         
         # Datos específicos del juego
-        self.team_a = "Central Arkansas Bears"
-        self.team_b = "Vanderbilt Commodores"
+        self.team_a = "Alabama Crimson Tide"
+        self.team_b = "Arizona Wildcats"
         
-        # Datos ofensivos de la imagen
+        # Datos ofensivos actualizados
         self.offensive_stats = {
-            'CARK': {
-                'points_per_game': 69.6,
-                'avg_score_margin': -5.1,
-                'assists_per_game': 14.2,
-                'total_rebounds': 36.0,
-                'effective_fg_pct': 49.3,
-                'off_rebound_pct': 21.7,
-                'fta_per_fga': 0.273,
-                'turnover_pct': 16.2
+            'ALA': {
+                'points_per_game': 95.1,
+                'avg_score_margin': 15.9,
+                'assists_per_game': 18.2,
+                'total_rebounds': 42.7,
+                'effective_fg_pct': 57.2,
+                'off_rebound_pct': 31.0,
+                'fta_per_fga': 0.342,
+                'turnover_pct': 11.1
             },
-            'VAN': {
-                'points_per_game': 96.8,
-                'avg_score_margin': 23.8,
-                'assists_per_game': 20.1,
-                'total_rebounds': 38.9,
-                'effective_fg_pct': 61.2,
-                'off_rebound_pct': 31.7,
-                'fta_per_fga': 0.358,
-                'turnover_pct': 10.9
+            'ARIZ': {
+                'points_per_game': 88.5,
+                'avg_score_margin': 21.4,
+                'assists_per_game': 19.5,
+                'total_rebounds': 42.3,
+                'effective_fg_pct': 58.0,
+                'off_rebound_pct': 42.3,
+                'fta_per_fga': 0.404,
+                'turnover_pct': 14.9
             }
         }
         
-        # Datos defensivos de la imagen
+        # Datos defensivos actualizados
         self.defensive_stats = {
-            'CARK': {
-                'opp_points_per_game': 74.7,
-                'opp_effective_fg_pct': 51.5,
-                'off_rebounds_per_game': 7.7,
-                'def_rebounds_per_game': 24.4,
-                'blocks_per_game': 1.6,
-                'steals_per_game': 8.2,
-                'personal_fouls_per_game': 16.7
+            'ALA': {
+                'opp_points_per_game': 79.2,
+                'opp_effective_fg_pct': 47.6,
+                'off_rebounds_per_game': 10.4,
+                'def_rebounds_per_game': 28.7,
+                'blocks_per_game': 6.2,
+                'steals_per_game': 7.8,
+                'personal_fouls_per_game': 18.6
             },
-            'VAN': {
-                'opp_points_per_game': 73.0,
-                'opp_effective_fg_pct': 46.3,
-                'off_rebounds_per_game': 9.2,
-                'def_rebounds_per_game': 25.7,
-                'blocks_per_game': 5.4,
-                'steals_per_game': 9.9,
-                'personal_fouls_per_game': 21.1
+            'ARIZ': {
+                'opp_points_per_game': 67.1,
+                'opp_effective_fg_pct': 45.1,
+                'off_rebounds_per_game': 12.4,
+                'def_rebounds_per_game': 26.8,
+                'blocks_per_game': 4.4,
+                'steals_per_game': 8.4,
+                'personal_fouls_per_game': 17.0
             }
         }
     
@@ -75,7 +75,7 @@ class NCAAFPredictor:
         # Fórmula: 40% ofensiva + 40% defensiva + 20% eficiencia
         quality_scores = {}
         
-        for team in ['CARK', 'VAN']:
+        for team in ['ALA', 'ARIZ']:
             # Componente ofensivo (0-100)
             off_rating = (
                 self.offensive_stats[team]['points_per_game'] * 0.3 +
@@ -110,7 +110,7 @@ class NCAAFPredictor:
                 'eff_rating': round(eff_rating / 1.5, 1)
             }
             
-            print(f"{'Central Arkansas' if team == 'CARK' else 'Vanderbilt'}:")
+            print(f"{'Alabama' if team == 'ALA' else 'Arizona'}:")
             print(f"  Rating Total: {quality_scores[team]['rating']}/100")
             print(f"  Ofensivo: {quality_scores[team]['off_rating']}/100")
             print(f"  Defensivo: {quality_scores[team]['def_rating']}/100")
@@ -124,39 +124,39 @@ class NCAAFPredictor:
         print("\n2️⃣ REGRESIÓN LINEAL - PREDICCIÓN DE PUNTOS")
         print("-" * 40)
         
-        # Variables predictoras
+        # Variables predictoras con nuevos datos
         X = np.array([
             # [PTS/G, eFG%, Asist, RebOf%, TOV%, OppPTS, Blk, Rob]
-            [69.6, 49.3, 14.2, 21.7, 16.2, 74.7, 1.6, 8.2],  # CARK
-            [96.8, 61.2, 20.1, 31.7, 10.9, 73.0, 5.4, 9.9]   # VAN
+            [95.1, 57.2, 18.2, 31.0, 11.1, 79.2, 6.2, 7.8],   # Alabama
+            [88.5, 58.0, 19.5, 42.3, 14.9, 67.1, 4.4, 8.4]    # Arizona
         ])
         
-        # Variables objetivo (puntos anotados en juegos similares históricos)
-        y = np.array([69.6, 96.8])
+        # Variables objetivo
+        y = np.array([95.1, 88.5])
         
         # Entrenar modelo
         model = LinearRegression()
         model.fit(X, y)
         
         # Predecir
-        pred_cark = model.predict([X[0]])[0]
-        pred_van = model.predict([X[1]])[0]
+        pred_ala = model.predict([X[0]])[0]
+        pred_ariz = model.predict([X[1]])[0]
         
         # Ajustar por enfrentamiento defensivo
-        def_adjustment_cark = (100 - self.defensive_stats['VAN']['opp_effective_fg_pct'] * 2) / 100
-        def_adjustment_van = (100 - self.defensive_stats['CARK']['opp_effective_fg_pct'] * 2) / 100
+        def_adjustment_ala = (100 - self.defensive_stats['ARIZ']['opp_effective_fg_pct'] * 2) / 100
+        def_adjustment_ariz = (100 - self.defensive_stats['ALA']['opp_effective_fg_pct'] * 2) / 100
         
-        final_pred_cark = pred_cark * def_adjustment_cark
-        final_pred_van = pred_van * def_adjustment_van
+        final_pred_ala = pred_ala * def_adjustment_ala
+        final_pred_ariz = pred_ariz * def_adjustment_ariz
         
-        print(f"Central Arkansas Predicción: {final_pred_cark:.1f} puntos")
-        print(f"Vanderbilt Predicción: {final_pred_van:.1f} puntos")
-        print(f"Diferencia: {final_pred_van - final_pred_cark:.1f} puntos")
+        print(f"Alabama Predicción: {final_pred_ala:.1f} puntos")
+        print(f"Arizona Predicción: {final_pred_ariz:.1f} puntos")
+        print(f"Diferencia: {final_pred_ala - final_pred_ariz:.1f} puntos")
         
         return {
-            'cark_points': round(final_pred_cark, 1),
-            'van_points': round(final_pred_van, 1),
-            'margin': round(final_pred_van - final_pred_cark, 1)
+            'ala_points': round(final_pred_ala, 1),
+            'ariz_points': round(final_pred_ariz, 1),
+            'margin': round(final_pred_ala - final_pred_ariz, 1)
         }
     
     # ==================== MÓDULO 3: MACHINE LEARNING ENSEMBLE ====================
@@ -181,42 +181,42 @@ class NCAAFPredictor:
                    X_train[:, 5] * 0.1)   # Blk
         y_train += np.random.normal(0, 5, n_samples)  # Ruido
         
-        # Características para CARK y VAN
-        X_cark = np.array([[49.3, 16.2, 36.0, 14.2, 8.2, 1.6]])
-        X_van = np.array([[61.2, 10.9, 38.9, 20.1, 9.9, 5.4]])
+        # Características para Alabama y Arizona
+        X_ala = np.array([[57.2, 11.1, 42.7, 18.2, 7.8, 6.2]])
+        X_ariz = np.array([[58.0, 14.9, 42.3, 19.5, 8.4, 4.4]])
         
         # Modelo 1: Random Forest
         rf = RandomForestRegressor(n_estimators=100, random_state=42)
         rf.fit(X_train, y_train)
-        pred_rf_cark = rf.predict(X_cark)[0]
-        pred_rf_van = rf.predict(X_van)[0]
+        pred_rf_ala = rf.predict(X_ala)[0]
+        pred_rf_ariz = rf.predict(X_ariz)[0]
         
         # Modelo 2: Gradient Boosting
         gb = GradientBoostingRegressor(n_estimators=100, random_state=42)
         gb.fit(X_train, y_train)
-        pred_gb_cark = gb.predict(X_cark)[0]
-        pred_gb_van = gb.predict(X_van)[0]
+        pred_gb_ala = gb.predict(X_ala)[0]
+        pred_gb_ariz = gb.predict(X_ariz)[0]
         
         # Ensemble promedio
-        ensemble_cark = (pred_rf_cark + pred_gb_cark) / 2
-        ensemble_van = (pred_rf_van + pred_gb_van) / 2
+        ensemble_ala = (pred_rf_ala + pred_gb_ala) / 2
+        ensemble_ariz = (pred_rf_ariz + pred_gb_ariz) / 2
         
         # Convertir a puntos
-        base_cark = 69.6
-        base_van = 96.8
+        base_ala = 95.1
+        base_ariz = 88.5
         
-        final_cark = base_cark + (ensemble_cark - 50) / 10
-        final_van = base_van + (ensemble_van - 50) / 10
+        final_ala = base_ala + (ensemble_ala - 50) / 10
+        final_ariz = base_ariz + (ensemble_ariz - 50) / 10
         
-        print(f"Random Forest - CARK: {pred_rf_cark:.1f}, VAN: {pred_rf_van:.1f}")
-        print(f"Gradient Boost - CARK: {pred_gb_cark:.1f}, VAN: {pred_gb_van:.1f}")
-        print(f"Ensemble Final - CARK: {final_cark:.1f}, VAN: {final_van:.1f}")
+        print(f"Random Forest - ALA: {pred_rf_ala:.1f}, ARIZ: {pred_rf_ariz:.1f}")
+        print(f"Gradient Boost - ALA: {pred_gb_ala:.1f}, ARIZ: {pred_gb_ariz:.1f}")
+        print(f"Ensemble Final - ALA: {final_ala:.1f}, ARIZ: {final_ariz:.1f}")
         
         return {
-            'cark_ensemble': round(final_cark, 1),
-            'van_ensemble': round(final_van, 1),
-            'ensemble_margin': round(final_van - final_cark, 1),
-            'model_agreement': round(100 - abs(pred_rf_cark - pred_gb_cark), 1)
+            'ala_ensemble': round(final_ala, 1),
+            'ariz_ensemble': round(final_ariz, 1),
+            'ensemble_margin': round(final_ala - final_ariz, 1),
+            'model_agreement': round(100 - abs(pred_rf_ala - pred_gb_ala), 1)
         }
     
     # ==================== MÓDULO 4: FOUR FACTORS ESTIMADOS ====================
@@ -226,56 +226,56 @@ class NCAAFPredictor:
         print("-" * 40)
         
         # eFG% estimado (considerando defensa rival)
-        efg_cark = (self.offensive_stats['CARK']['effective_fg_pct'] * 0.7 + 
-                   (100 - self.defensive_stats['VAN']['opp_effective_fg_pct']) * 0.3)
+        efg_ala = (self.offensive_stats['ALA']['effective_fg_pct'] * 0.7 + 
+                   (100 - self.defensive_stats['ARIZ']['opp_effective_fg_pct']) * 0.3)
         
-        efg_van = (self.offensive_stats['VAN']['effective_fg_pct'] * 0.7 + 
-                   (100 - self.defensive_stats['CARK']['opp_effective_fg_pct']) * 0.3)
+        efg_ariz = (self.offensive_stats['ARIZ']['effective_fg_pct'] * 0.7 + 
+                    (100 - self.defensive_stats['ALA']['opp_effective_fg_pct']) * 0.3)
         
         # TOV% estimado
-        tov_cark = (self.offensive_stats['CARK']['turnover_pct'] * 0.6 + 
-                   self.defensive_stats['VAN']['steals_per_game'] * 0.4)
+        tov_ala = (self.offensive_stats['ALA']['turnover_pct'] * 0.6 + 
+                   self.defensive_stats['ARIZ']['steals_per_game'] * 0.4)
         
-        tov_van = (self.offensive_stats['VAN']['turnover_pct'] * 0.6 + 
-                   self.defensive_stats['CARK']['steals_per_game'] * 0.4)
+        tov_ariz = (self.offensive_stats['ARIZ']['turnover_pct'] * 0.6 + 
+                    self.defensive_stats['ALA']['steals_per_game'] * 0.4)
         
         # ORB% estimado
-        orb_cark = (self.offensive_stats['CARK']['off_rebound_pct'] * 0.5 + 
-                   (100 - self.defensive_stats['VAN']['def_rebounds_per_game'] * 2) * 0.5)
+        orb_ala = (self.offensive_stats['ALA']['off_rebound_pct'] * 0.5 + 
+                   (100 - self.defensive_stats['ARIZ']['def_rebounds_per_game'] * 2) * 0.5)
         
-        orb_van = (self.offensive_stats['VAN']['off_rebound_pct'] * 0.5 + 
-                   (100 - self.defensive_stats['CARK']['def_rebounds_per_game'] * 2) * 0.5)
+        orb_ariz = (self.offensive_stats['ARIZ']['off_rebound_pct'] * 0.5 + 
+                    (100 - self.defensive_stats['ALA']['def_rebounds_per_game'] * 2) * 0.5)
         
         # FTA/FGA estimado
-        ftr_cark = self.offensive_stats['CARK']['fta_per_fga'] * 100
-        ftr_van = self.offensive_stats['VAN']['fta_per_fga'] * 100
+        ftr_ala = self.offensive_stats['ALA']['fta_per_fga'] * 100
+        ftr_ariz = self.offensive_stats['ARIZ']['fta_per_fga'] * 100
         
         four_factors = {
-            'CARK': {
-                'efg': round(efg_cark, 1),
-                'tov': round(tov_cark, 1),
-                'orb': round(orb_cark, 1),
-                'ftr': round(ftr_cark, 1)
+            'ALA': {
+                'efg': round(efg_ala, 1),
+                'tov': round(tov_ala, 1),
+                'orb': round(orb_ala, 1),
+                'ftr': round(ftr_ala, 1)
             },
-            'VAN': {
-                'efg': round(efg_van, 1),
-                'tov': round(tov_van, 1),
-                'orb': round(orb_van, 1),
-                'ftr': round(ftr_van, 1)
+            'ARIZ': {
+                'efg': round(efg_ariz, 1),
+                'tov': round(tov_ariz, 1),
+                'orb': round(orb_ariz, 1),
+                'ftr': round(ftr_ariz, 1)
             }
         }
         
-        print("Central Arkansas Four Factors:")
-        print(f"  eFG%: {four_factors['CARK']['efg']}%")
-        print(f"  TOV%: {four_factors['CARK']['tov']}%")
-        print(f"  ORB%: {four_factors['CARK']['orb']}%")
-        print(f"  FTR: {four_factors['CARK']['ftr']}")
+        print("Alabama Four Factors:")
+        print(f"  eFG%: {four_factors['ALA']['efg']}%")
+        print(f"  TOV%: {four_factors['ALA']['tov']}%")
+        print(f"  ORB%: {four_factors['ALA']['orb']}%")
+        print(f"  FTR: {four_factors['ALA']['ftr']}")
         
-        print("\nVanderbilt Four Factors:")
-        print(f"  eFG%: {four_factors['VAN']['efg']}%")
-        print(f"  TOV%: {four_factors['VAN']['tov']}%")
-        print(f"  ORB%: {four_factors['VAN']['orb']}%")
-        print(f"  FTR: {four_factors['VAN']['ftr']}")
+        print("\nArizona Four Factors:")
+        print(f"  eFG%: {four_factors['ARIZ']['efg']}%")
+        print(f"  TOV%: {four_factors['ARIZ']['tov']}%")
+        print(f"  ORB%: {four_factors['ARIZ']['orb']}%")
+        print(f"  FTR: {four_factors['ARIZ']['ftr']}")
         
         return four_factors
     
@@ -285,12 +285,12 @@ class NCAAFPredictor:
         print("\n5️⃣ EV+ (EXPECTED VALUE PLUS) & CRITERIO KELLY")
         print("-" * 40)
         
-        # Supongamos odds del mercado (esto vendría de API real)
+        # Odds del mercado para Alabama vs Arizona
         market_odds = {
-            'moneyline_cark': +450,    # Central Arkansas +450 (underdog)
-            'moneyline_van': -600,     # Vanderbilt -600 (favorito)
-            'spread': 25.5,            # Vanderbilt -25.5
-            'total': 160.5             # Total Over/Under
+            'moneyline_ala': -120,    # Alabama -120
+            'moneyline_ariz': +100,   # Arizona +100
+            'spread': -2.5,           # Alabama -2.5
+            'total': 175.5            # Total Over/Under
         }
         
         # Probabilidad de nuestro modelo
@@ -298,19 +298,19 @@ class NCAAFPredictor:
         total = final_prediction['total']
         
         # Calcular probabilidades
-        std_dev = 12.0  # Desviación estándar ajustada
+        std_dev = 8.5  # Desviación estándar ajustada para equipos de élite
         
-        # Probabilidad de Vanderbilt cubriendo -25.5
-        z_score_spread = (margin - 25.5) / std_dev
-        prob_cover_van = self._normal_cdf(z_score_spread)
+        # Probabilidad de Alabama cubriendo -2.5
+        z_score_spread = (margin - (-2.5)) / std_dev
+        prob_cover_ala = self._normal_cdf(z_score_spread)
         
         # Probabilidad de Over/Under
-        z_score_total = (total - 160.5) / std_dev
+        z_score_total = (total - 175.5) / std_dev
         prob_over = 1 - self._normal_cdf(z_score_total)
         
         # Probabilidad de ganador directo
-        prob_win_van = self._normal_cdf(margin / std_dev)
-        prob_win_cark = 1 - prob_win_van
+        prob_win_ala = self._normal_cdf(margin / std_dev)
+        prob_win_ariz = 1 - prob_win_ala
         
         # Convertir odds a probabilidad implícita
         def implied_probability(american_odds):
@@ -320,8 +320,9 @@ class NCAAFPredictor:
                 return abs(american_odds) / (abs(american_odds) + 100)
         
         # Calcular EV para cada mercado
-        ev_spread_van = (prob_cover_van - implied_probability(-110)) * 100
-        ev_moneyline_cark = (prob_win_cark - implied_probability(+450)) * 100
+        ev_spread_ala = (prob_cover_ala - implied_probability(-110)) * 100
+        ev_moneyline_ala = (prob_win_ala - implied_probability(-120)) * 100
+        ev_moneyline_ariz = (prob_win_ariz - implied_probability(+100)) * 100
         ev_total_over = (prob_over - implied_probability(-110)) * 100
         
         # Criterio Kelly
@@ -334,40 +335,45 @@ class NCAAFPredictor:
             kelly = (b * win_prob - q) / b
             return max(0, min(kelly * 0.5, 0.25))  # Fractional Kelly conservador
         
-        kelly_spread = kelly_criterion(prob_cover_van, -110)
-        kelly_moneyline = kelly_criterion(prob_win_cark, +450)
+        kelly_spread = kelly_criterion(prob_cover_ala, -110)
+        kelly_moneyline_ala = kelly_criterion(prob_win_ala, -120)
+        kelly_moneyline_ariz = kelly_criterion(prob_win_ariz, +100)
         kelly_total = kelly_criterion(prob_over, -110)
         
         ev_results = {
             'probabilities': {
-                'cark_win': round(prob_win_cark * 100, 1),
-                'van_win': round(prob_win_van * 100, 1),
-                'van_cover': round(prob_cover_van * 100, 1),
+                'ala_win': round(prob_win_ala * 100, 1),
+                'ariz_win': round(prob_win_ariz * 100, 1),
+                'ala_cover': round(prob_cover_ala * 100, 1),
                 'over': round(prob_over * 100, 1)
             },
             'expected_value': {
-                'spread_ev': round(ev_spread_van, 2),
-                'moneyline_ev': round(ev_moneyline_cark, 2),
+                'spread_ev': round(ev_spread_ala, 2),
+                'moneyline_ala_ev': round(ev_moneyline_ala, 2),
+                'moneyline_ariz_ev': round(ev_moneyline_ariz, 2),
                 'total_ev': round(ev_total_over, 2)
             },
             'kelly_criterion': {
                 'spread_kelly': round(kelly_spread * 100, 1),
-                'moneyline_kelly': round(kelly_moneyline * 100, 1),
+                'moneyline_ala_kelly': round(kelly_moneyline_ala * 100, 1),
+                'moneyline_ariz_kelly': round(kelly_moneyline_ariz * 100, 1),
                 'total_kelly': round(kelly_total * 100, 1)
             },
             'market_odds': market_odds
         }
         
-        print(f"Probabilidad Vanderbilt gane: {ev_results['probabilities']['van_win']}%")
-        print(f"Probabilidad cubra -25.5: {ev_results['probabilities']['van_cover']}%")
-        print(f"Probabilidad Over 160.5: {ev_results['probabilities']['over']}%")
+        print(f"Probabilidad Alabama gane: {ev_results['probabilities']['ala_win']}%")
+        print(f"Probabilidad cubra -2.5: {ev_results['probabilities']['ala_cover']}%")
+        print(f"Probabilidad Over 175.5: {ev_results['probabilities']['over']}%")
         print(f"\nExpected Value (EV):")
         print(f"  Spread: {ev_results['expected_value']['spread_ev']}%")
-        print(f"  Moneyline CARK: {ev_results['expected_value']['moneyline_ev']}%")
+        print(f"  Moneyline ALA: {ev_results['expected_value']['moneyline_ala_ev']}%")
+        print(f"  Moneyline ARIZ: {ev_results['expected_value']['moneyline_ariz_ev']}%")
         print(f"  Total: {ev_results['expected_value']['total_ev']}%")
         print(f"\nCriterio Kelly (% bankroll):")
         print(f"  Spread: {ev_results['kelly_criterion']['spread_kelly']}%")
-        print(f"  Moneyline CARK: {ev_results['kelly_criterion']['moneyline_kelly']}%")
+        print(f"  Moneyline ALA: {ev_results['kelly_criterion']['moneyline_ala_kelly']}%")
+        print(f"  Moneyline ARIZ: {ev_results['kelly_criterion']['moneyline_ariz_kelly']}%")
         print(f"  Total: {ev_results['kelly_criterion']['total_kelly']}%")
         
         return ev_results
@@ -379,38 +385,38 @@ class NCAAFPredictor:
         print("=" * 50)
         
         # Consolidar predicciones
-        cark_points_final = (linear_pred['cark_points'] * 0.4 + 
-                            ensemble_pred['cark_ensemble'] * 0.4 + 
-                            quality_scores['CARK']['rating'] * 0.2)
+        ala_points_final = (linear_pred['ala_points'] * 0.4 + 
+                           ensemble_pred['ala_ensemble'] * 0.4 + 
+                           quality_scores['ALA']['rating'] * 0.2)
         
-        van_points_final = (linear_pred['van_points'] * 0.4 + 
-                           ensemble_pred['van_ensemble'] * 0.4 + 
-                           quality_scores['VAN']['rating'] * 0.2)
+        ariz_points_final = (linear_pred['ariz_points'] * 0.4 + 
+                            ensemble_pred['ariz_ensemble'] * 0.4 + 
+                            quality_scores['ARIZ']['rating'] * 0.2)
         
         # Margen final
-        margin_final = van_points_final - cark_points_final
+        margin_final = ala_points_final - ariz_points_final
         
         # Total final
-        total_final = cark_points_final + van_points_final
+        total_final = ala_points_final + ariz_points_final
         
         # Grado de confianza (0-100%)
         confidence = min(100, max(0, 
-            (quality_scores['VAN']['rating'] - quality_scores['CARK']['rating']) * 0.5 +
-            abs(margin_final) * 1.5 +
+            (quality_scores['ALA']['rating'] - quality_scores['ARIZ']['rating']) * 0.5 +
+            abs(margin_final) * 2.5 +
             ensemble_pred['model_agreement']
         ))
         
         # Determinar ganador
         if margin_final > 0:
-            winner = "Vanderbilt Commodores"
-            winner_confidence = (van_points_final / (van_points_final + cark_points_final)) * 100
+            winner = "Alabama Crimson Tide"
+            winner_confidence = (ala_points_final / (ala_points_final + ariz_points_final)) * 100
         else:
-            winner = "Central Arkansas Bears"
-            winner_confidence = (cark_points_final / (van_points_final + cark_points_final)) * 100
+            winner = "Arizona Wildcats"
+            winner_confidence = (ariz_points_final / (ala_points_final + ariz_points_final)) * 100
         
         final_pred = {
-            'central_arkansas_score': round(cark_points_final, 1),
-            'vanderbilt_score': round(van_points_final, 1),
+            'alabama_score': round(ala_points_final, 1),
+            'arizona_score': round(ariz_points_final, 1),
             'margin': round(margin_final, 1),
             'total': round(total_final, 1),
             'winner': winner,
@@ -421,7 +427,7 @@ class NCAAFPredictor:
         
         # Mostrar resultados
         print(f"🏆 RESULTADO PREDICHO: {winner}")
-        print(f"📊 Puntuación Final: {final_pred['central_arkansas_score']} - {final_pred['vanderbilt_score']}")
+        print(f"📊 Puntuación Final: {final_pred['alabama_score']} - {final_pred['arizona_score']}")
         print(f"📈 Margen: {final_pred['margin']} puntos")
         print(f"🎯 Total: {final_pred['total']} puntos")
         print(f"💪 Grado de Confianza: {final_pred['confidence_score']}%")
@@ -442,35 +448,43 @@ class NCAAFPredictor:
         """Genera recomendaciones de apuestas"""
         recommendations = []
         
-        # Spread recomendación (Vanderbilt -25.5)
-        if margin > 25.5:
-            recommendations.append("📈 SPREAD: Vanderbilt -25.5 (RECOMENDADO)")
-        elif margin < 25.5:
-            recommendations.append("📈 SPREAD: Central Arkansas +25.5 (RECOMENDADO)")
+        # Spread recomendación (Alabama -2.5)
+        if margin > 2.5 and confidence > 60:
+            recommendations.append("📈 SPREAD: Alabama -2.5 (RECOMENDADO)")
+        elif margin < -2.5 and confidence > 60:
+            recommendations.append("📈 SPREAD: Arizona +2.5 (RECOMENDADO)")
         else:
             recommendations.append("📈 SPREAD: No bet (margen muy cercano)")
         
         # Total recomendación
-        if total > 160.5:
-            recommendations.append("🎯 TOTAL: Over 160.5 (RECOMENDADO)")
+        if total > 175.5 and confidence > 55:
+            recommendations.append("🎯 TOTAL: Over 175.5 (RECOMENDADO)")
+        elif total < 175.5 and confidence > 55:
+            recommendations.append("🎯 TOTAL: Under 175.5 (RECOMENDADO)")
         else:
-            recommendations.append("🎯 TOTAL: Under 160.5 (RECOMENDADO)")
+            recommendations.append("🎯 TOTAL: Cautela (total muy ajustado)")
         
         # Moneyline recomendación
-        if margin > 0 and confidence > 70:
-            recommendations.append("💰 MONEYLINE: Vanderbilt (ALTA CONFIANZA)")
-        elif margin < 0 and confidence > 60:
-            recommendations.append("💰 MONEYLINE: Central Arkansas (VALOR POSITIVO)")
+        if margin > 0 and confidence > 65:
+            recommendations.append("💰 MONEYLINE: Alabama (VALOR MODERADO)")
+        elif margin < 0 and confidence > 65:
+            recommendations.append("💰 MONEYLINE: Arizona (VALOR POSITIVO)")
         else:
-            recommendations.append("💰 MONEYLINE: Evitar (riesgo elevado)")
+            recommendations.append("💰 MONEYLINE: Evitar (poco valor)")
         
-        # Kelly sizing
-        if confidence > 80:
-            recommendations.append("⚡ TAMAÑO: 2-3% bankroll (ALTA CONFIANZA)")
+        # Kelly sizing basado en confianza
+        if confidence > 75:
+            recommendations.append("⚡ TAMAÑO: 3-4% bankroll (ALTA CONFIANZA)")
         elif confidence > 60:
             recommendations.append("⚡ TAMAÑO: 1-2% bankroll (MEDIA CONFIANZA)")
         else:
             recommendations.append("⚡ TAMAÑO: 0.5% bankroll (BAJA CONFIANZA)")
+        
+        # Hot take basado en datos
+        if margin > 5:
+            recommendations.append("🔥 HOT TAKE: Alabama gana por más de 10")
+        elif margin < -5:
+            recommendations.append("🔥 HOT TAKE: Arizona sorprende por +7")
         
         return recommendations
     
@@ -496,7 +510,7 @@ class NCAAFPredictor:
             'game_info': {
                 'home': self.team_a,
                 'away': self.team_b,
-                'date': '2024-03-20'
+                'date': '2024-03-25'
             },
             'quality_estimation': quality,
             'linear_regression': linear,
@@ -522,11 +536,17 @@ if __name__ == "__main__":
     print("=" * 60)
     print(f"🏀 {results['game_info']['home']} vs {results['game_info']['away']}")
     print(f"🏆 Ganador Predicho: {results['final_prediction']['winner']}")
-    print(f"📊 Puntuación: {results['final_prediction']['central_arkansas_score']}-{results['final_prediction']['vanderbilt_score']}")
+    print(f"📊 Puntuación: {results['final_prediction']['alabama_score']}-{results['final_prediction']['arizona_score']}")
     print(f"📈 Margen: {results['final_prediction']['margin']} puntos")
     print(f"🎯 Total: {results['final_prediction']['total']} puntos")
     print(f"💪 Confianza: {results['final_prediction']['confidence_score']}%")
-    print(f"💰 Mejor EV: {max(results['ev_analysis']['expected_value'].values())}%")
+    
+    # Encontrar mejor EV
+    ev_values = results['ev_analysis']['expected_value']
+    best_ev_market = max(ev_values, key=ev_values.get)
+    best_ev_value = ev_values[best_ev_market]
+    
+    print(f"💰 Mejor EV: {best_ev_value}% ({best_ev_market})")
     print("=" * 60)
     
     # Guardar resultados en archivo
