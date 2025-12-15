@@ -1,55 +1,36 @@
-# Proyecto: Pronóstico de Estadísticas Deportivas
+# Pronóstico de Estadísticas - Coby White Edition
 
 ## Descripción
-Sistema de pronóstico de estadísticas esperadas (xRebound, xAssists, xPoints) para jugadores de baloncesto utilizando múltiples metodologías estadísticas avanzadas.
+Sistema de pronóstico específico para Coby White, base de los Chicago Bulls, utilizando sus estadísticas reales de tiro y distribución de posesiones.
 
-## Características
-- **4 Metodologías de Pronóstico:**
-  1. Estimación de Calidad
-  2. Regresión Lineal
-  3. Machine Learning
-  4. EV+ (Expected Value Plus)
+## Datos Específicos de Coby White
+- **Minutos estimados:** 29 minutos
+- **Condición:** Visitante (sin ventaja de local)
+- **Porcentajes de tiro:**
+  - 2P: 53.7%
+  - 3P: 23.8%
+  - FT: 80.0%
+- **Distribución de posesiones:**
+  - 2P: 35.6%
+  - 3P: 30.1%
+  - FT: 34.3%
+- **FGA+FTA por 36min:** 23.6
 
-- **Factores Considerados:**
-  - Minutos de juego estimados
-  - Ventaja de local/visitante
-  - Estadísticas ofensivas/defensivas de equipos
-  - Ritmo de juego (PACE)
-  - Porcentajes de tiro del jugador
-  - Factores de ajuste contextual
+## Resultados del Pronóstico
+| Estadística | Pronóstico | Explicación |
+|-------------|------------|-------------|
+| **xRebound** | 3.4 | Rebotes bajos típicos de base |
+| **xAssists** | 5.6 | Buen nivel de asistencias para base |
+| **xPoints** | 15.8 | Anotación sólida basada en porcentajes |
 
-## Archivos del Proyecto
+## Factores Clave Considerados
+1. **Condición de visitante:** Reducción del 3-5% en estadísticas
+2. **Defensa de NO:** Permite 58.2% eFG (defensa débil)
+3. **Perfil de base:** Mayor peso a asistencias, menor a rebotes
+4. **Ritmo de juego:** Ajuste de 1.02 (juego rápido)
 
-### 1. `index.html`
-Interfaz web interactiva que muestra:
-- Pronósticos de xRebound, xAssists y xPoints
-- Comparativa de estadísticas entre equipos
-- Desglose por metodología
-- Visualizaciones atractivas con animaciones
+## Cómo Ejecutar
 
-### 2. `pronostico_estadisticas.py`
-Script Python que implementa:
-- Clase `PronosticoEstadisticas` con los 4 métodos
-- Generación de datos históricos simulados
-- Cálculo de promedios ponderados
-- Exportación de resultados a CSV
-
-### 3. `pronostico_giddey.csv` (generado)
-Resultados del pronóstico en formato CSV
-
-## Cómo Usar
-
-### Para la interfaz web:
-1. Abrir `index.html` en cualquier navegador web
-2. Ver los pronósticos con animación incluida
-
-### Para el análisis Python:
-```python
-# Ejecutar el script
-python pronostico_estadisticas.py
-
-# O importar la clase
-from pronostico_estadisticas import PronosticoEstadisticas
-
-pronostico = PronosticoEstadisticas()
-resultados = pronostico.calcular_promedio_ponderado()
+### Python:
+```bash
+python pronostico_estadisticas_coby.py
