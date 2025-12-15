@@ -28,9 +28,3 @@ Sistema de pronóstico específico para Coby White, base de los Chicago Bulls, u
 2. **Defensa de NO:** Permite 58.2% eFG (defensa débil)
 3. **Perfil de base:** Mayor peso a asistencias, menor a rebotes
 4. **Ritmo de juego:** Ajuste de 1.02 (juego rápido)
-
-## Cómo Ejecutar
-
-### Python:
-```bash
-python pronostico_estadisticas_coby.py
