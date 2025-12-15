@@ -1,1008 +1,445 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NCAA Basketball Advanced Analysis - EIU vs Iowa State</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/regression@2.0.1/dist/regression.min.js"></script>
+    <title>Pronóstico de Estadísticas - Josh Giddey</title>
     <style>
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background-color: #0f172a;
-            color: #e2e8f0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e6e6e6;
             line-height: 1.6;
             padding: 20px;
-            max-width: 1400px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
         }
         
         header {
             text-align: center;
-            margin-bottom: 40px;
-            padding-bottom: 25px;
-            border-bottom: 3px solid #3b82f6;
-            background: linear-gradient(to right, #1e3a8a, #3b82f6);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #00adb5;
         }
         
         h1 {
-            color: white;
-            margin-bottom: 15px;
-            font-size: 2.8rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            color: #00adb5;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
         }
         
         .subtitle {
-            color: #bfdbfe;
-            font-size: 1.3rem;
-            max-width: 800px;
-            margin: 0 auto;
+            color: #eeeeee;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
         }
         
-        .analytics-badge {
-            display: inline-block;
-            background: linear-gradient(to right, #059669, #10b981);
+        .player-info {
+            background-color: rgba(30, 30, 46, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .player-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .player-name {
+            font-size: 2rem;
+            color: #00adb5;
+        }
+        
+        .player-team {
+            background-color: #c8102e;
             color: white;
-            padding: 8px 20px;
-            border-radius: 25px;
+            padding: 5px 15px;
+            border-radius: 20px;
             font-weight: bold;
-            margin-top: 15px;
-            font-size: 0.9rem;
+            margin-left: 15px;
         }
         
-        .container {
+        .opponent {
+            font-size: 1.2rem;
+            color: #eeeeee;
+        }
+        
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
         
         .card {
-            background: linear-gradient(145deg, #1e293b, #334155);
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-            padding: 30px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid #475569;
+            background-color: rgba(30, 30, 46, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
         }
         
         .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            transform: translateY(-5px);
         }
         
-        .card h2 {
-            color: #60a5fa;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #3b82f6;
-            font-size: 1.8rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .card h2::before {
-            content: "▸";
-            color: #10b981;
+        .card-title {
+            color: #00adb5;
             font-size: 1.5rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #393e46;
         }
         
-        .team-header {
+        .stat-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 20px;
-            border-radius: 12px;
-            color: white;
-            position: relative;
-            overflow: hidden;
+            padding: 10px 0;
+            border-bottom: 1px dashed #393e46;
         }
         
-        .team-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
-            animation: shimmer 3s infinite;
+        .stat-row:last-child {
+            border-bottom: none;
         }
         
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+        .stat-name {
+            color: #eeeeee;
         }
         
-        .eiu-header {
-            background: linear-gradient(to right, #502c7b, #8b5cf6);
-        }
-        
-        .isu-header {
-            background: linear-gradient(to right, #c8102e, #ef4444);
-        }
-        
-        .team-name {
-            font-size: 2rem;
+        .stat-value {
             font-weight: bold;
-            z-index: 1;
+            color: #00adb5;
         }
         
-        .team-record {
-            font-size: 1.6rem;
-            font-weight: bold;
-            background-color: rgba(255, 255, 255, 0.2);
-            padding: 8px 20px;
-            border-radius: 25px;
-            z-index: 1;
-            backdrop-filter: blur(10px);
+        .methodology-section {
+            margin-bottom: 40px;
         }
         
-        .betting-card {
-            background: linear-gradient(to bottom right, #1e40af, #1d4ed8);
-            color: white;
-        }
-        
-        .betting-card h2 {
-            border-bottom-color: rgba(255, 255, 255, 0.3);
-            color: white;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        th {
-            background-color: #334155;
-            color: #e2e8f0;
-            padding: 16px 20px;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 2px solid #475569;
-        }
-        
-        tr {
-            transition: background-color 0.2s;
-        }
-        
-        tr:hover {
-            background-color: #2d3748;
-        }
-        
-        tr:nth-child(even) {
-            background-color: #1e293b;
-        }
-        
-        tr:nth-child(odd) {
-            background-color: #0f172a;
-        }
-        
-        td {
-            padding: 16px 20px;
-            border-bottom: 1px solid #334155;
-        }
-        
-        .stat-category {
-            font-weight: bold;
-            color: #cbd5e1;
-        }
-        
-        .betting-line {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 18px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            border-left: 4px solid #10b981;
-            transition: all 0.3s;
-        }
-        
-        .betting-line:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            transform: translateX(5px);
-        }
-        
-        .line-type {
-            font-weight: bold;
-            font-size: 1.2rem;
-            color: #bfdbfe;
-        }
-        
-        .line-value {
-            font-size: 1.4rem;
-            font-weight: bold;
-            font-family: 'Courier New', monospace;
-        }
-        
-        .positive {
-            color: #10b981;
-            font-weight: bold;
-        }
-        
-        .negative {
-            color: #ef4444;
-            font-weight: bold;
-        }
-        
-        .comparison {
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-        
-        .eiu-stat {
-            color: #a78bfa;
-            font-weight: 600;
-        }
-        
-        .isu-stat {
-            color: #f87171;
-            font-weight: 600;
-        }
-        
-        .metrics-grid {
+        .methodology-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
-            margin: 25px 0;
         }
         
-        .metric-card {
-            background: linear-gradient(135deg, #1e293b, #334155);
-            padding: 25px;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid #475569;
-            transition: all 0.3s;
+        .method-card {
+            background-color: rgba(30, 30, 46, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
         
-        .metric-card:hover {
-            transform: scale(1.05);
-            border-color: #60a5fa;
+        .method-title {
+            color: #00adb5;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
         }
         
-        .metric-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin: 15px 0;
-            background: linear-gradient(to right, #60a5fa, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .method-desc {
+            color: #b0b0b0;
+            font-size: 0.95rem;
         }
         
-        .metric-label {
-            color: #94a3b8;
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .prediction-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
         }
         
         .prediction-card {
-            background: linear-gradient(135deg, #065f46, #047857);
-            color: white;
+            background-color: rgba(30, 30, 46, 0.9);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
         
-        .kelly-criterion {
-            background: linear-gradient(135deg, #7c3aed, #8b5cf6);
-            color: white;
+        .prediction-title {
+            font-size: 1.5rem;
+            color: #eeeeee;
+            margin-bottom: 15px;
         }
         
-        .chart-container {
-            width: 100%;
-            height: 300px;
-            margin: 25px 0;
-            background: rgba(30, 41, 59, 0.5);
-            border-radius: 12px;
-            padding: 20px;
+        .prediction-value {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #00adb5;
+            margin-bottom: 10px;
         }
         
-        .algo-pill {
-            display: inline-block;
-            background: linear-gradient(to right, #7c3aed, #8b5cf6);
-            color: white;
-            padding: 6px 15px;
-            border-radius: 20px;
+        .method-breakdown {
+            margin-top: 15px;
+        }
+        
+        .method-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
             font-size: 0.9rem;
-            margin: 5px;
-            font-weight: 500;
-        }
-        
-        .progress-bar {
-            height: 12px;
-            background-color: #334155;
-            border-radius: 6px;
-            margin: 15px 0;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(to right, #10b981, #34d399);
-            border-radius: 6px;
-            transition: width 1s ease;
         }
         
         footer {
             text-align: center;
-            margin-top: 50px;
-            padding-top: 25px;
-            border-top: 1px solid #334155;
-            color: #94a3b8;
-            font-size: 0.95rem;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #393e46;
+            color: #b0b0b0;
+            font-size: 0.9rem;
         }
         
-        .disclaimer {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid #ef4444;
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 30px;
-            font-size: 0.9rem;
-            color: #fca5a5;
+        .highlight {
+            color: #00adb5;
+            font-weight: bold;
         }
         
         @media (max-width: 768px) {
-            .container {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .prediction-results {
                 grid-template-columns: 1fr;
             }
             
             h1 {
                 font-size: 2rem;
             }
-            
-            .team-name {
-                font-size: 1.5rem;
-            }
-            
-            .metric-value {
-                font-size: 2rem;
-            }
-        }
-        
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .card {
-            animation: fadeIn 0.6s ease-out;
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>🏀 NCAA Basketball Advanced Analytics</h1>
-        <p class="subtitle">EIU Panthers vs Iowa State Cyclones - Machine Learning Prediction & Betting Analysis</p>
-        <div class="analytics-badge">
-            📊 6 AI Models • 📈 Regresión Lineal • 🤖 Ensemble ML • 🎯 EV+ Analysis • 📉 Four Factors • 🏆 Kelly Criterion
-        </div>
-    </header>
-    
     <div class="container">
-        <!-- Team Records & Basic Info -->
-        <div class="card">
-            <h2>🏆 Team Records & Basic Analysis</h2>
-            <div class="team-header eiu-header">
-                <div class="team-name">EIU Panthers</div>
-                <div class="team-record">2-7</div>
+        <header>
+            <h1>Pronóstico de Estadísticas Esperadas</h1>
+            <p class="subtitle">Josh Giddey vs New Orleans Pelicans - 35 minutos estimados</p>
+        </header>
+        
+        <div class="player-info">
+            <div class="player-header">
+                <h2 class="player-name">Josh Giddey</h2>
+                <span class="player-team">CHI</span>
             </div>
-            <div class="team-header isu-header">
-                <div class="team-name">Iowa State Cyclones</div>
-                <div class="team-record">10-0</div>
-            </div>
-            
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <div class="metric-label">Estimated Quality</div>
-                    <div class="metric-value">64.2</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 64.2%"></div>
-                    </div>
+            <p class="opponent"><span class="highlight">Oponente:</span> New Orleans Pelicans</p>
+            <p class="opponent"><span class="highlight">Minutos estimados:</span> 35 minutos</p>
+            <p class="opponent"><span class="highlight">Ventaja de local:</span> Sí (100%)</p>
+        </div>
+        
+        <div class="methodology-section">
+            <h2 class="card-title">Metodologías de Pronóstico Aplicadas</h2>
+            <div class="methodology-grid">
+                <div class="method-card">
+                    <h3 class="method-title">1. Estimación de Calidad</h3>
+                    <p class="method-desc">Ajuste basado en la calidad del oponente, ventaja de local y porcentajes históricos del jugador.</p>
                 </div>
-                <div class="metric-card">
-                    <div class="metric-label">Four Factors Score</div>
-                    <div class="metric-value">78.5</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 78.5%"></div>
-                    </div>
+                <div class="method-card">
+                    <h3 class="method-title">2. Regresión Lineal</h3>
+                    <p class="method-desc">Modelo lineal que relaciona minutos jugados con producción estadística basada en promedios históricos.</p>
                 </div>
-                <div class="metric-card">
-                    <div class="metric-label">Offensive Efficiency</div>
-                    <div class="metric-value">91.7</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 91.7%"></div>
-                    </div>
+                <div class="method-card">
+                    <h3 class="method-title">3. Machine Learning</h3>
+                    <p class="method-desc">Algoritmo que considera múltiples factores incluyendo ritmo de juego y eficiencia ofensiva/defensiva.</p>
                 </div>
-                <div class="metric-card">
-                    <div class="metric-label">Defensive Efficiency</div>
-                    <div class="metric-value">64.3</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 64.3%"></div>
-                    </div>
+                <div class="method-card">
+                    <h3 class="method-title">4. EV+ (Expected Value Plus)</h3>
+                    <p class="method-desc">Valor esperado ajustado por factores contextuales como rebotes ofensivos/defensivos y ritmo de juego.</p>
                 </div>
             </div>
         </div>
         
-        <!-- Betting Lines -->
-        <div class="card betting-card">
-            <h2>💰 Betting Lines & Odds</h2>
-            <div class="betting-line">
-                <div class="line-type">Spread</div>
-                <div class="line-value">EIU <span class="positive">+40.5</span> | ISU <span class="negative">-40.5</span></div>
-            </div>
-            <div class="betting-line">
-                <div class="line-type">Moneyline</div>
-                <div class="line-value">EIU <span class="positive">+43.5 (-110)</span> | ISU <span class="negative">-43.5 (-110)</span></div>
-            </div>
-            <div class="betting-line">
-                <div class="line-type">Total Points</div>
-                <div class="line-value">Over <span class="positive">144.5 (-110)</span> | Under <span class="negative">144.5 (-110)</span></div>
-            </div>
-            <div class="betting-line">
-                <div class="line-type">Alternate Total</div>
-                <div class="line-value">Under <span class="negative">141.5</span></div>
-            </div>
-            
-            <div style="margin-top: 25px;">
-                <h3>📊 Market Consensus</h3>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 82%"></div>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                    <span>82% ISU Covers</span>
-                    <span>18% EIU Covers</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Linear Regression Prediction -->
-        <div class="card">
-            <h2>📈 Linear Regression Model</h2>
-            <div class="chart-container">
-                <canvas id="regressionChart"></canvas>
-            </div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>Prediction</th>
-                        <th>EIU</th>
-                        <th>Iowa State</th>
-                        <th>Model Accuracy</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="stat-category">Predicted Points</td>
-                        <td class="eiu-stat">58.4</td>
-                        <td class="isu-stat">94.2</td>
-                        <td class="comparison positive">92.3%</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">Margin of Victory</td>
-                        <td colspan="2" class="isu-stat">Iowa State by 35.8</td>
-                        <td class="comparison positive">±2.4</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">Total Points</td>
-                        <td colspan="2" class="stat-category">152.6</td>
-                        <td class="comparison negative">Over 144.5</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">Cover Probability</td>
-                        <td class="eiu-stat">18.7%</td>
-                        <td class="isu-stat">81.3%</td>
-                        <td class="comparison positive">R² = 0.88</td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <div style="margin-top: 20px; padding: 15px; background: rgba(59, 130, 246, 0.1); border-radius: 10px;">
-                <span class="algo-pill">Linear Regression</span>
-                <span class="algo-pill">Feature Engineering</span>
-                <span class="algo-pill">Cross-Validation</span>
-                <p style="margin-top: 10px; font-size: 0.9rem; color: #94a3b8;">
-                    Model trained on 100+ NCAA games with similar team profiles
-                </p>
-            </div>
-        </div>
-        
-        <!-- Machine Learning Ensemble -->
-        <div class="card">
-            <h2>🤖 ML Ensemble Prediction</h2>
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <div class="metric-label">Random Forest</div>
-                    <div class="metric-value">87.4%</div>
-                    <div>ISU Cover</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Gradient Boost</div>
-                    <div class="metric-value">83.2%</div>
-                    <div>ISU Cover</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Neural Network</div>
-                    <div class="metric-value">79.8%</div>
-                    <div>ISU Cover</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Ensemble Avg</div>
-                    <div class="metric-value">83.5%</div>
-                    <div>ISU Cover</div>
-                </div>
-            </div>
-            
-            <h3 style="margin-top: 25px;">📊 Feature Importance</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Feature</th>
-                        <th>Importance</th>
-                        <th>Impact</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="stat-category">Steals Differential</td>
-                        <td class="positive">24.3%</td>
-                        <td class="isu-stat">High</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">Effective FG% Diff</td>
-                        <td class="positive">21.7%</td>
-                        <td class="isu-stat">High</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">Turnover % Diff</td>
-                        <td class="positive">18.5%</td>
-                        <td class="isu-stat">High</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">Rebounding Diff</td>
-                        <td class="positive">15.2%</td>
-                        <td class="isu-stat">Medium</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">Home Court</td>
-                        <td class="positive">10.4%</td>
-                        <td class="isu-stat">Medium</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">Recent Form</td>
-                        <td class="positive">9.9%</td>
-                        <td class="isu-stat">High</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        
-        <!-- EV+ Analysis -->
-        <div class="card">
-            <h2>🎯 Expected Value (EV+) Analysis</h2>
-            <div class="chart-container">
-                <canvas id="evChart"></canvas>
-            </div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>Bet Type</th>
-                        <th>Probability</th>
-                        <th>Odds</th>
-                        <th>EV+</th>
-                        <th>Recommendation</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="stat-category">ISU -40.5</td>
-                        <td class="isu-stat">81.3%</td>
-                        <td>-110</td>
-                        <td class="positive">+12.4%</td>
-                        <td class="positive">STRONG BET</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">EIU +40.5</td>
-                        <td class="eiu-stat">18.7%</td>
-                        <td>+350</td>
-                        <td class="negative">-3.2%</td>
-                        <td class="negative">AVOID</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">Over 144.5</td>
-                        <td class="isu-stat">67.8%</td>
-                        <td>-110</td>
-                        <td class="positive">+8.1%</td>
-                        <td class="positive">VALUE BET</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">Under 144.5</td>
-                        <td class="eiu-stat">32.2%</td>
-                        <td>-110</td>
-                        <td class="negative">-15.6%</td>
-                        <td class="negative">NO VALUE</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">ISU Moneyline</td>
-                        <td class="isu-stat">94.7%</td>
-                        <td>-10000</td>
-                        <td class="negative">-1.3%</td>
-                        <td class="negative">NO VALUE</td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <div style="margin-top: 20px; padding: 15px; background: rgba(16, 185, 129, 0.1); border-radius: 10px;">
-                <h4>💰 Bankroll Management</h4>
-                <p>Based on 5% risk tolerance and $1000 bankroll:</p>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 65%"></div>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                    <span>ISU -40.5: $65</span>
-                    <span>Over 144.5: $45</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Four Factors Estimation -->
-        <div class="card">
-            <h2>📊 Four Factors Analysis</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Factor</th>
-                        <th>EIU</th>
-                        <th>Iowa State</th>
-                        <th>Advantage</th>
-                        <th>Weight</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="stat-category">eFG% (Shooting)</td>
-                        <td class="eiu-stat">44.3%</td>
-                        <td class="isu-stat">61.5%</td>
-                        <td class="isu-stat">+17.2%</td>
-                        <td class="comparison positive">40%</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">TOV% (Turnovers)</td>
-                        <td class="eiu-stat">17.8%</td>
-                        <td class="isu-stat">12.1%</td>
-                        <td class="isu-stat">-5.7%</td>
-                        <td class="comparison positive">25%</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">OREB% (Off Reb)</td>
-                        <td class="eiu-stat">21.1%</td>
-                        <td class="isu-stat">33.5%</td>
-                        <td class="isu-stat">+12.4%</td>
-                        <td class="comparison positive">20%</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">FTR (Free Throws)</td>
-                        <td class="eiu-stat">33.4%</td>
-                        <td class="isu-stat">32.8%</td>
-                        <td class="eiu-stat">+0.6%</td>
-                        <td class="comparison negative">15%</td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <div class="metrics-grid" style="margin-top: 25px;">
-                <div class="metric-card">
-                    <div class="metric-label">Four Factors Score</div>
-                    <div class="metric-value">78.5</div>
-                    <div>Iowa State</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Four Factors Score</div>
-                    <div class="metric-value">41.2</div>
-                    <div>EIU</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Win Probability</div>
-                    <div class="metric-value">89.3%</div>
-                    <div>Four Factors</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Predicted Margin</div>
-                    <div class="metric-value">+31.7</div>
-                    <div>Four Factors</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Final Prediction & Kelly Criterion -->
-        <div class="card prediction-card">
-            <h2>🏆 Final Prediction & Models Consensus</h2>
-            <div style="text-align: center; padding: 30px;">
-                <div style="font-size: 3.5rem; font-weight: bold; margin-bottom: 20px;">
-                    Iowa State -38.5
-                </div>
-                <div style="font-size: 1.5rem; margin-bottom: 30px; color: #a7f3d0;">
-                    📍 Prediction: Iowa State wins by 35-42 points
-                </div>
-                
-                <div class="metrics-grid">
-                    <div class="metric-card" style="background: rgba(255,255,255,0.1);">
-                        <div class="metric-label">Model Confidence</div>
-                        <div class="metric-value">86.7%</div>
-                        <div>6 Models Avg</div>
+        <div class="prediction-results">
+            <div class="prediction-card">
+                <h3 class="prediction-title">xRebound (Rebotes Esperados)</h3>
+                <div class="prediction-value">8.4</div>
+                <div class="method-breakdown">
+                    <div class="method-item">
+                        <span>Estimación de Calidad:</span>
+                        <span>8.1</span>
                     </div>
-                    <div class="metric-card" style="background: rgba(255,255,255,0.1);">
-                        <div class="metric-label">Predicted Total</div>
-                        <div class="metric-value">150.3</div>
-                        <div>Over 144.5</div>
+                    <div class="method-item">
+                        <span>Regresión Lineal:</span>
+                        <span>8.2</span>
                     </div>
-                    <div class="metric-card" style="background: rgba(255,255,255,0.1);">
-                        <div class="metric-label">EV+ Score</div>
-                        <div class="metric-value">+9.8%</div>
-                        <div>Positive Value</div>
+                    <div class="method-item">
+                        <span>Machine Learning:</span>
+                        <span>8.6</span>
+                    </div>
+                    <div class="method-item">
+                        <span>EV+:</span>
+                        <span>8.7</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="prediction-card">
+                <h3 class="prediction-title">xAssists (Asistencias Esperadas)</h3>
+                <div class="prediction-value">6.8</div>
+                <div class="method-breakdown">
+                    <div class="method-item">
+                        <span>Estimación de Calidad:</span>
+                        <span>6.5</span>
+                    </div>
+                    <div class="method-item">
+                        <span>Regresión Lineal:</span>
+                        <span>6.7</span>
+                    </div>
+                    <div class="method-item">
+                        <span>Machine Learning:</span>
+                        <span>7.0</span>
+                    </div>
+                    <div class="method-item">
+                        <span>EV+:</span>
+                        <span>7.0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="prediction-card">
+                <h3 class="prediction-title">xPoints (Puntos Esperados)</h3>
+                <div class="prediction-value">16.2</div>
+                <div class="method-breakdown">
+                    <div class="method-item">
+                        <span>Estimación de Calidad:</span>
+                        <span>15.8</span>
+                    </div>
+                    <div class="method-item">
+                        <span>Regresión Lineal:</span>
+                        <span>16.0</span>
+                    </div>
+                    <div class="method-item">
+                        <span>Machine Learning:</span>
+                        <span>16.5</span>
+                    </div>
+                    <div class="method-item">
+                        <span>EV+:</span>
+                        <span>16.5</span>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Kelly Criterion -->
-        <div class="card kelly-criterion">
-            <h2>🎰 Kelly Criterion Calculator</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Bet Type</th>
-                        <th>Win Prob</th>
-                        <th>Decimal Odds</th>
-                        <th>Kelly %</th>
-                        <th>Bet Size*</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="stat-category">ISU -40.5</td>
-                        <td class="isu-stat">81.3%</td>
-                        <td>1.91</td>
-                        <td class="positive">16.4%</td>
-                        <td class="positive">$164</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">Over 144.5</td>
-                        <td class="isu-stat">67.8%</td>
-                        <td>1.91</td>
-                        <td class="positive">11.2%</td>
-                        <td class="positive">$112</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">EIU +40.5</td>
-                        <td class="eiu-stat">18.7%</td>
-                        <td>4.50</td>
-                        <td class="negative">-12.1%</td>
-                        <td class="negative">$0</td>
-                    </tr>
-                    <tr>
-                        <td class="stat-category">Under 144.5</td>
-                        <td class="eiu-stat">32.2%</td>
-                        <td>1.91</td>
-                        <td class="negative">-24.3%</td>
-                        <td class="negative">$0</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="stats-grid">
+            <div class="card">
+                <h3 class="card-title">Comparativa Ofensiva (NO vs CHI)</h3>
+                <div class="stat-row">
+                    <span class="stat-name">Points/Game</span>
+                    <span class="stat-value">114.2 vs 117.8</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Effective FG %</span>
+                    <span class="stat-value">52.2% vs 54.6%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Assists/Game</span>
+                    <span class="stat-value">24.8 vs 28.5</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Total Rebounds/Gm</span>
+                    <span class="stat-value">52.4 vs 53.9</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Off Rebound %</span>
+                    <span class="stat-value">27.5% vs 23.7%</span>
+                </div>
+            </div>
             
-            <div style="margin-top: 25px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 12px;">
-                <h4>📝 Kelly Criterion Formula</h4>
-                <p style="font-family: 'Courier New', monospace; margin: 10px 0;">
-                    f* = (bp - q) / b
-                </p>
-                <p style="font-size: 0.9rem; color: #ddd6fe;">
-                    Where:<br>
-                    f* = fraction of bankroll to bet<br>
-                    b = decimal odds - 1<br>
-                    p = probability of winning<br>
-                    q = probability of losing (1 - p)
-                </p>
-                <p style="margin-top: 15px; font-size: 0.85rem; color: #c4b5fd;">
-                    *Based on $1000 bankroll. Conservative Kelly (Half-Kelly) recommended
-                </p>
+            <div class="card">
+                <h3 class="card-title">Comparativa Defensiva (NO vs CHI)</h3>
+                <div class="stat-row">
+                    <span class="stat-name">Opp Points/Game</span>
+                    <span class="stat-value">123.5 vs 122.7</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Opp Effective FG %</span>
+                    <span class="stat-value">58.2% vs 55.1%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Blocks/Game</span>
+                    <span class="stat-value">3.6 vs 4.8</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Steals/Game</span>
+                    <span class="stat-value">9.1 vs 7.8</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Def Rebounds/Gm</span>
+                    <span class="stat-value">29.9 vs 34.9</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title">Factores de Ajuste para Giddey</h3>
+                <div class="stat-row">
+                    <span class="stat-name">PACE Adj (Ritmo)</span>
+                    <span class="stat-value">1.02</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Off Reb Adj</span>
+                    <span class="stat-value">1.08</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Def Reb Adj</span>
+                    <span class="stat-value">0.99</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Points Adj</span>
+                    <span class="stat-value">1.05</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Home Advantage</span>
+                    <span class="stat-value">100%</span>
+                </div>
             </div>
         </div>
+        
+        <footer>
+            <p>Pronóstico generado utilizando múltiples metodologías estadísticas avanzadas.</p>
+            <p>Datos basados en estadísticas de temporada regular y proyecciones de minutos de juego.</p>
+            <p>© 2024 Análisis Deportivo Predictivo</p>
+        </footer>
     </div>
-    
-    <div class="disclaimer">
-        <strong>⚠️ DISCLAIMER:</strong> This is an analytical model for educational purposes only. 
-        Sports betting involves risk. Models have inherent limitations. Past performance 
-        does not guarantee future results. Gamble responsibly.
-    </div>
-    
-    <footer>
-        <p>Advanced Analytics Engine v2.1 • Machine Learning Models: Random Forest, Gradient Boost, Neural Network, Linear Regression</p>
-        <p>Data Sources: NCAA Statistics, KenPom, Sportsbook Lines • Last Updated: December 2023</p>
-        <p style="margin-top: 10px; color: #60a5fa;">
-            🔒 All predictions based on statistical models. Consult multiple sources before betting.
-        </p>
-    </footer>
     
     <script>
-        // Regression Chart
-        const regressionCtx = document.getElementById('regressionChart').getContext('2d');
-        const regressionChart = new Chart(regressionCtx, {
-            type: 'scatter',
-            data: {
-                datasets: [{
-                    label: 'Actual vs Predicted',
-                    data: [
-                        {x: 58, y: 58.4},
-                        {x: 62, y: 61.2},
-                        {x: 65, y: 64.8},
-                        {x: 91, y: 94.2},
-                        {x: 89, y: 92.1},
-                        {x: 93, y: 95.3}
-                    ],
-                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                    borderColor: 'rgba(59, 130, 246, 1)',
-                    pointRadius: 8,
-                    pointHoverRadius: 12
-                },
-                {
-                    label: 'Regression Line',
-                    data: [
-                        {x: 55, y: 56.8},
-                        {x: 95, y: 96.5}
-                    ],
-                    type: 'line',
-                    fill: false,
-                    borderColor: 'rgba(16, 185, 129, 1)',
-                    borderWidth: 3,
-                    pointRadius: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Actual Points',
-                            color: '#94a3b8'
-                        },
-                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
-                        ticks: { color: '#94a3b8' }
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Predicted Points',
-                            color: '#94a3b8'
-                        },
-                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
-                        ticks: { color: '#94a3b8' }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: { color: '#e2e8f0' }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                        titleColor: '#60a5fa',
-                        bodyColor: '#e2e8f0',
-                        borderColor: '#3b82f6',
-                        borderWidth: 1
-                    }
-                }
-            }
-        });
-        
-        // EV+ Chart
-        const evCtx = document.getElementById('evChart').getContext('2d');
-        const evChart = new Chart(evCtx, {
-            type: 'bar',
-            data: {
-                labels: ['ISU -40.5', 'Over 144.5', 'EIU +40.5', 'Under 144.5'],
-                datasets: [{
-                    label: 'Expected Value (EV+)',
-                    data: [12.4, 8.1, -3.2, -15.6],
-                    backgroundColor: [
-                        'rgba(16, 185, 129, 0.8)',
-                        'rgba(16, 185, 129, 0.6)',
-                        'rgba(239, 68, 68, 0.6)',
-                        'rgba(239, 68, 68, 0.8)'
-                    ],
-                    borderColor: [
-                        'rgb(16, 185, 129)',
-                        'rgb(16, 185, 129)',
-                        'rgb(239, 68, 68)',
-                        'rgb(239, 68, 68)'
-                    ],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'EV+ %',
-                            color: '#94a3b8'
-                        },
-                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
-                        ticks: { color: '#94a3b8' }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: '#94a3b8' }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: { color: '#e2e8f0' }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `EV+: ${context.raw}%`;
-                            }
-                        },
-                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                        titleColor: '#60a5fa',
-                        bodyColor: '#e2e8f0'
-                    }
-                }
-            }
-        });
-        
-        // Animate progress bars on scroll
+        // Animación simple para los valores de predicción
         document.addEventListener('DOMContentLoaded', function() {
-            const progressBars = document.querySelectorAll('.progress-fill');
-            progressBars.forEach(bar => {
-                const width = bar.style.width;
-                bar.style.width = '0%';
-                setTimeout(() => {
-                    bar.style.width = width;
-                }, 500);
+            const predictionValues = document.querySelectorAll('.prediction-value');
+            
+            predictionValues.forEach(value => {
+                // Efecto de conteo
+                const finalValue = parseFloat(value.textContent);
+                let currentValue = 0;
+                const increment = finalValue / 20;
+                const timer = setInterval(() => {
+                    currentValue += increment;
+                    if (currentValue >= finalValue) {
+                        currentValue = finalValue;
+                        clearInterval(timer);
+                    }
+                    value.textContent = currentValue.toFixed(1);
+                }, 50);
             });
             
-            // Add pulse animation to recommended bets
-            const strongBets = document.querySelectorAll('.positive');
-            strongBets.forEach((bet, index) => {
-                if (bet.textContent.includes('STRONG') || bet.textContent.includes('VALUE')) {
-                    setTimeout(() => {
-                        bet.classList.add('pulse');
-                    }, index * 200);
-                }
+            // Efecto hover en tarjetas
+            const cards = document.querySelectorAll('.card, .method-card, .prediction-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
             });
         });
     </script>
