@@ -1,616 +1,388 @@
 import numpy as np
 import pandas as pd
-import json
-from datetime import datetime
-from typing import Dict, List, Tuple
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler
 import warnings
 warnings.filterwarnings('ignore')
 
-class AdvancedBasketballAnalyzer:
+class PronosticoEstadisticas:
+    """
+    Clase para pronosticar estadísticas esperadas (xRebound, xAssists, xPoints)
+    utilizando múltiples metodologías estadísticas.
+    """
+    
     def __init__(self):
-        self.data = self.load_data()
-        self.models = {}
+        """Inicializa los datos del jugador y equipos."""
+        # Datos del jugador (Josh Giddey)
+        self.jugador = {
+            'nombre': 'Josh Giddey',
+            'equipo': 'CHI',
+            'oponente': 'NO',
+            'minutos_estimados': 35,
+            'ventaja_local': True,
+            
+            # Estadísticas base por 36 minutos (estimadas)
+            'rebotes_36min': 8.3,
+            'asistencias_36min': 6.5,
+            'puntos_36min': 16.0,
+            
+            # Porcentajes de tiro
+            'fg2_percent': 0.515,
+            'fg3_percent': 0.400,
+            'ft_percent': 0.748,
+            
+            # Distribución de posesiones
+            'poss_2p': 0.495,
+            'poss_3p': 0.216,
+            'poss_ft': 0.288,
+            
+            # Factores de ajuste
+            'pace_adj': 1.02,
+            'off_reb_adj': 1.08,
+            'def_reb_adj': 0.99,
+            'points_adj': 1.05,
+            'home_adj': 1.03 if True else 1.0
+        }
         
-    def load_data(self) -> Dict:
-        """Load all game data including advanced metrics"""
-        return {
-            "metadata": {
-                "game": "EIU Panthers vs Iowa State Cyclones",
-                "date": "2023-12-10",
-                "location": "Hilton Coliseum, Ames, IA",
-                "home_team": "Iowa State"
+        # Estadísticas de equipos
+        self.estadisticas_equipos = {
+            'NO': {
+                'off_pts_game': 114.2,
+                'def_pts_game': 123.5,
+                'off_efg': 0.522,
+                'def_efg': 0.582,
+                'off_reb_pct': 0.275,
+                'def_reb_pct': 1 - 0.237,  # NO defiende vs CHI off reb 23.7%
+                'assists_game': 24.8,
+                'opp_assists_game': 28.5,  # Asistencias permitidas
+                'pace': 98.5,  # Estimado
+                'def_rating': 115.0  # Estimado
             },
-            "teams": {
-                "EIU": {
-                    "name": "EIU Panthers",
-                    "record": "2-7",
-                    "quality_metrics": {
-                        "kenpom_rating": 285,
-                        "sagarin_rating": 68.2,
-                        "net_rating": -18.3,
-                        "strength_of_schedule": 45.2
-                    },
-                    "offensive_stats": {
-                        "points_per_game": 61.8,
-                        "avg_score_margin": -18.3,
-                        "assists_per_game": 11.1,
-                        "total_rebounds_per_game": 28.6,
-                        "effective_fg_percent": 44.3,
-                        "off_rebound_percent": 21.1,
-                        "fta_per_fga": 0.334,
-                        "turnover_percent": 17.8,
-                        "offensive_rating": 92.4,
-                        "pace": 68.2,
-                        "three_point_percent": 32.1,
-                        "two_point_percent": 45.2,
-                        "ft_percent": 71.3
-                    },
-                    "defensive_stats": {
-                        "opp_points_per_game": 80.0,
-                        "opp_effective_fg_percent": 55.0,
-                        "off_rebounds_per_game": 6.4,
-                        "def_rebounds_per_game": 18.9,
-                        "blocks_per_game": 2.8,
-                        "steals_per_game": 5.5,
-                        "personal_fouls_per_game": 17.0,
-                        "defensive_rating": 108.7,
-                        "opp_turnover_percent": 16.2,
-                        "block_percent": 8.1,
-                        "steal_percent": 7.8
-                    }
-                },
-                "ISU": {
-                    "name": "Iowa State Cyclones",
-                    "record": "10-0",
-                    "quality_metrics": {
-                        "kenpom_rating": 12,
-                        "sagarin_rating": 91.5,
-                        "net_rating": 27.4,
-                        "strength_of_schedule": 78.3
-                    },
-                    "offensive_stats": {
-                        "points_per_game": 91.7,
-                        "avg_score_margin": 27.4,
-                        "assists_per_game": 18.3,
-                        "total_rebounds_per_game": 35.1,
-                        "effective_fg_percent": 61.5,
-                        "off_rebound_percent": 33.5,
-                        "fta_per_fga": 0.328,
-                        "turnover_percent": 12.1,
-                        "offensive_rating": 118.3,
-                        "pace": 71.5,
-                        "three_point_percent": 38.7,
-                        "two_point_percent": 58.2,
-                        "ft_percent": 76.4
-                    },
-                    "defensive_stats": {
-                        "opp_points_per_game": 64.3,
-                        "opp_effective_fg_percent": 49.5,
-                        "off_rebounds_per_game": 9.4,
-                        "def_rebounds_per_game": 21.9,
-                        "blocks_per_game": 3.4,
-                        "steals_per_game": 11.1,
-                        "personal_fouls_per_game": 16.1,
-                        "defensive_rating": 88.6,
-                        "opp_turnover_percent": 24.8,
-                        "block_percent": 9.3,
-                        "steal_percent": 15.4
-                    }
-                }
-            },
-            "betting_lines": {
-                "spread": {
-                    "EIU": {"points": 40.5, "odds": 110},
-                    "ISU": {"points": -40.5, "odds": -110}
-                },
-                "moneyline": {
-                    "EIU": {"odds": 4350},
-                    "ISU": {"odds": -10000}
-                },
-                "total": {
-                    "over": {"points": 144.5, "odds": -110},
-                    "under": {"points": 144.5, "odds": -110}
-                }
+            'CHI': {
+                'off_pts_game': 117.8,
+                'def_pts_game': 122.7,
+                'off_efg': 0.546,
+                'def_efg': 0.551,
+                'off_reb_pct': 0.237,
+                'def_reb_pct': 1 - 0.275,  # CHI defiende vs NO off reb 27.5%
+                'assists_game': 28.5,
+                'opp_assists_game': 24.8,  # Asistencias permitidas
+                'pace': 100.0,  # Estimado
+                'def_rating': 114.0  # Estimado
             }
         }
+        
+        # Datos históricos simulados para Machine Learning
+        self._generar_datos_historicos()
     
-    def calculate_estimated_quality(self) -> Dict:
-        """Calculate estimated team quality scores"""
-        quality_scores = {}
+    def _generar_datos_historicos(self):
+        """Genera datos históricos simulados para entrenamiento."""
+        np.random.seed(42)
+        n_muestras = 100
         
-        for team in ["EIU", "ISU"]:
-            stats = self.data["teams"][team]
-            
-            # Weighted quality score (0-100 scale)
-            offensive_score = (
-                stats["offensive_stats"]["effective_fg_percent"] * 0.3 +
-                stats["offensive_stats"]["offensive_rating"] * 0.2 +
-                (100 - stats["offensive_stats"]["turnover_percent"]) * 0.2 +
-                stats["offensive_stats"]["off_rebound_percent"] * 0.15 +
-                stats["offensive_stats"]["assists_per_game"] * 0.15
-            ) / 1.0
-            
-            defensive_score = (
-                (100 - stats["defensive_stats"]["opp_effective_fg_percent"]) * 0.3 +
-                (100 - stats["defensive_stats"]["defensive_rating"]) * 0.2 +
-                stats["defensive_stats"]["steal_percent"] * 0.2 +
-                stats["defensive_stats"]["block_percent"] * 0.15 +
-                stats["defensive_stats"]["opp_turnover_percent"] * 0.15
-            ) / 1.0
-            
-            overall_score = offensive_score * 0.6 + defensive_score * 0.4
-            
-            quality_scores[team] = {
-                "offensive_score": round(offensive_score, 1),
-                "defensive_score": round(defensive_score, 1),
-                "overall_score": round(overall_score, 1)
-            }
+        # Variables: minutos, pace_opp, def_rating_opp, home, reb_skill, ast_skill, pts_skill
+        self.X_hist = np.random.randn(n_muestras, 7)
+        self.X_hist[:, 0] = np.random.uniform(25, 40, n_muestras)  # Minutos
+        self.X_hist[:, 1] = np.random.uniform(95, 105, n_muestras)  # Ritmo oponente
+        self.X_hist[:, 2] = np.random.uniform(110, 120, n_muestras)  # Rating defensivo oponente
+        self.X_hist[:, 3] = np.random.randint(0, 2, n_muestras)  # Local/Visitante
+        self.X_hist[:, 4] = np.random.uniform(0.8, 1.2, n_muestras)  # Habilidad rebotes
+        self.X_hist[:, 5] = np.random.uniform(0.8, 1.2, n_muestras)  # Habilidad asistencias
+        self.X_hist[:, 6] = np.random.uniform(0.8, 1.2, n_muestras)  # Habilidad puntos
         
-        return quality_scores
+        # Valores objetivo (simulados)
+        self.y_reb_hist = (
+            0.22 * self.X_hist[:, 0] +  # Minutos
+            0.05 * self.X_hist[:, 1] -  # Ritmo (positivo)
+            0.03 * self.X_hist[:, 2] +  # Def rating (negativo)
+            0.5 * self.X_hist[:, 3] +  # Ventaja local
+            3.0 * self.X_hist[:, 4] +  # Habilidad
+            np.random.randn(n_muestras) * 1.5  # Ruido
+        )
+        
+        self.y_ast_hist = (
+            0.18 * self.X_hist[:, 0] +  # Minutos
+            0.06 * self.X_hist[:, 1] -  # Ritmo (positivo)
+            0.02 * self.X_hist[:, 2] +  # Def rating (ligeramente negativo)
+            0.3 * self.X_hist[:, 3] +  # Ventaja local
+            2.5 * self.X_hist[:, 5] +  # Habilidad
+            np.random.randn(n_muestras) * 1.2  # Ruido
+        )
+        
+        self.y_pts_hist = (
+            0.45 * self.X_hist[:, 0] +  # Minutos
+            0.08 * self.X_hist[:, 1] -  # Ritmo (positivo)
+            0.10 * self.X_hist[:, 2] +  # Def rating (negativo)
+            1.0 * self.X_hist[:, 3] +  # Ventaja local
+            4.0 * self.X_hist[:, 6] +  # Habilidad
+            np.random.randn(n_muestras) * 2.0  # Ruido
+        )
     
-    def linear_regression_prediction(self) -> Dict:
-        """Predict game outcome using linear regression model"""
-        # Feature matrix based on key statistics
-        features = {
-            "efg_diff": self.data["teams"]["ISU"]["offensive_stats"]["effective_fg_percent"] - 
-                       self.data["teams"]["EIU"]["offensive_stats"]["effective_fg_percent"],
-            "turnover_diff": self.data["teams"]["EIU"]["offensive_stats"]["turnover_percent"] - 
-                           self.data["teams"]["ISU"]["offensive_stats"]["turnover_percent"],
-            "rebound_diff": self.data["teams"]["ISU"]["offensive_stats"]["off_rebound_percent"] - 
-                          self.data["teams"]["EIU"]["offensive_stats"]["off_rebound_percent"],
-            "steal_diff": self.data["teams"]["ISU"]["defensive_stats"]["steals_per_game"] - 
-                        self.data["teams"]["EIU"]["defensive_stats"]["steals_per_game"],
-            "def_eff_diff": self.data["teams"]["EIU"]["defensive_stats"]["defensive_rating"] - 
-                          self.data["teams"]["ISU"]["defensive_stats"]["defensive_rating"],
-            "home_court": 4.2  # Average home court advantage in NCAA
-        }
+    def estimacion_calidad(self):
+        """Método 1: Estimación basada en calidad de oponente y ajustes."""
+        minutos = self.jugador['minutos_estimados']
         
-        # Regression coefficients (simulated from historical data)
-        coefficients = {
-            "intercept": 65.3,
-            "efg_diff": 0.85,
-            "turnover_diff": 0.72,
-            "rebound_diff": 0.48,
-            "steal_diff": 1.12,
-            "def_eff_diff": 0.63,
-            "home_court": 1.05
-        }
+        # Factores de calidad del oponente
+        oponente = self.estadisticas_equipos[self.jugador['oponente']]
+        propio = self.estadisticas_equipos[self.jugador['equipo']]
         
-        # Calculate predicted margin
-        predicted_margin = coefficients["intercept"]
-        for feature, value in features.items():
-            predicted_margin += coefficients[feature] * value
+        # Factor defensivo del oponente (1.0 = promedio, <1.0 = mejor defensa)
+        factor_def_oponente = (oponente['def_rating'] / 115)  # 115 como promedio
         
-        # Add some randomness
-        error_margin = np.random.normal(0, 4.5)
-        predicted_margin += error_margin
+        # Ajuste por ritmo
+        factor_ritmo = oponente['pace'] / 100
         
-        # Predict individual team scores
-        avg_ppg = (self.data["teams"]["EIU"]["offensive_stats"]["points_per_game"] + 
-                  self.data["teams"]["ISU"]["offensive_stats"]["points_per_game"]) / 2
+        # Rebotes esperados
+        reb_base = self.jugador['rebotes_36min'] * (minutos / 36)
+        xReb = (
+            reb_base *
+            self.jugador['off_reb_adj'] *
+            self.jugador['def_reb_adj'] *
+            (1 / factor_def_oponente) *  # Mejor defensa = menos rebotes
+            factor_ritmo *
+            self.jugador['home_adj']
+        )
         
-        isu_predicted = avg_ppg + (predicted_margin / 2)
-        eiu_predicted = avg_ppg - (predicted_margin / 2)
+        # Asistencias esperadas
+        ast_base = self.jugador['asistencias_36min'] * (minutos / 36)
+        xAssists = (
+            ast_base *
+            (propio['off_efg'] / 0.54) *  # Mejor porcentaje = más asistencias
+            (1 / factor_def_oponente) *  # Mejor defensa = menos asistencias
+            factor_ritmo *
+            self.jugador['home_adj']
+        )
         
-        # Adjust for pace
-        pace_adjustment = (self.data["teams"]["ISU"]["offensive_stats"]["pace"] - 
-                         self.data["teams"]["EIU"]["offensive_stats"]["pace"]) * 0.3
+        # Puntos esperados
+        pts_base = self.jugador['puntos_36min'] * (minutos / 36)
         
-        isu_predicted += pace_adjustment
-        eiu_predicted -= pace_adjustment
+        # Cálculo de posesiones
+        poss_totales = 20.9 * (minutos / 36)  # Del dato Av. FGA+FTA
+        poss_2p = poss_totales * self.jugador['poss_2p']
+        poss_3p = poss_totales * self.jugador['poss_3p']
+        poss_ft = poss_totales * self.jugador['poss_ft'] / 2  # Aprox 2 FTA por posesión
+        
+        pts_2p = poss_2p * 2 * self.jugador['fg2_percent']
+        pts_3p = poss_3p * 3 * self.jugador['fg3_percent']
+        pts_ft = poss_ft * 1 * self.jugador['ft_percent']
+        
+        xPoints = (
+            (pts_2p + pts_3p + pts_ft) *
+            self.jugador['points_adj'] *
+            (1 / factor_def_oponente) *  # Mejor defensa = menos puntos
+            self.jugador['home_adj']
+        )
         
         return {
-            "predicted_margin": round(predicted_margin, 1),
-            "ISU_predicted_score": round(isu_predicted, 1),
-            "EIU_predicted_score": round(eiu_predicted, 1),
-            "predicted_total": round(isu_predicted + eiu_predicted, 1),
-            "confidence": min(95, max(70, 100 - abs(error_margin) * 3)),
-            "features": features,
-            "coefficients": coefficients
+            'xRebound': round(xReb, 1),
+            'xAssists': round(xAssists, 1),
+            'xPoints': round(xPoints, 1)
         }
     
-    def machine_learning_ensemble(self) -> Dict:
-        """Simulate multiple ML model predictions"""
-        base_probability = 0.813  # Base probability from regression
+    def regresion_lineal(self):
+        """Método 2: Regresión lineal basada en minutos y factores."""
+        minutos = self.jugador['minutos_estimados']
         
-        # Different model predictions
-        models = {
-            "random_forest": {
-                "prob_isu_cover": min(0.95, base_probability * 1.08),
-                "prob_over": 0.678,
-                "feature_importance": {
-                    "steals_diff": 0.243,
-                    "efg_diff": 0.217,
-                    "turnover_diff": 0.185,
-                    "rebound_diff": 0.152
-                }
-            },
-            "gradient_boost": {
-                "prob_isu_cover": min(0.95, base_probability * 1.02),
-                "prob_over": 0.642,
-                "feature_importance": {
-                    "efg_diff": 0.268,
-                    "steals_diff": 0.221,
-                    "turnover_diff": 0.192,
-                    "def_eff_diff": 0.154
-                }
-            },
-            "neural_network": {
-                "prob_isu_cover": min(0.95, base_probability * 0.98),
-                "prob_over": 0.712,
-                "feature_importance": {
-                    "steals_diff": 0.258,
-                    "efg_diff": 0.231,
-                    "home_court": 0.187,
-                    "turnover_diff": 0.164
-                }
-            }
-        }
+        # Modelos lineales simples
+        xReb = 0.22 * minutos + 1.5 * self.jugador['off_reb_adj'] + 0.8
+        xAssists = 0.18 * minutos + 1.2 * (self.jugador['pace_adj'] - 1) * 10 + 1.0
+        xPoints = 0.42 * minutos + 2.5 * (self.jugador['points_adj'] - 1) * 10 + 2.0
         
-        # Ensemble average
-        ensemble_probs = {
-            "isu_cover": np.mean([m["prob_isu_cover"] for m in models.values()]),
-            "over": np.mean([m["prob_over"] for m in models.values()])
-        }
+        # Ajuste por oponente
+        oponente = self.estadisticas_equipos[self.jugador['oponente']]
+        factor_def = oponente['def_rating'] / 114
+        
+        xReb *= (1 / factor_def) * 0.95
+        xAssists *= (1 / factor_def) * 0.97
+        xPoints *= (1 / factor_def) * 0.95
+        
+        # Ajuste por ventaja local
+        if self.jugador['ventaja_local']:
+            xReb *= 1.02
+            xAssists *= 1.03
+            xPoints *= 1.04
         
         return {
-            "models": models,
-            "ensemble": ensemble_probs,
-            "consensus": {
-                "isu_cover_prob": round(ensemble_probs["isu_cover"] * 100, 1),
-                "over_prob": round(ensemble_probs["over"] * 100, 1)
-            }
+            'xRebound': round(xReb, 1),
+            'xAssists': round(xAssists, 1),
+            'xPoints': round(xPoints, 1)
         }
     
-    def calculate_ev_plus(self) -> Dict:
-        """Calculate Expected Value (EV+) for each bet"""
-        ml_predictions = self.linear_regression_prediction()
-        ml_ensemble = self.machine_learning_ensemble()
+    def machine_learning(self):
+        """Método 3: Predicción usando modelo de machine learning (simulado)."""
+        # Preparar datos de entrada
+        oponente = self.estadisticas_equipos[self.jugador['oponente']]
         
-        # Convert American odds to decimal and implied probability
-        def american_to_decimal(odds):
-            if odds > 0:
-                return odds / 100 + 1
-            else:
-                return 100 / abs(odds) + 1
+        X_input = np.array([[
+            self.jugador['minutos_estimados'],  # Minutos
+            oponente['pace'],  # Ritmo del oponente
+            oponente['def_rating'],  # Rating defensivo del oponente
+            1 if self.jugador['ventaja_local'] else 0,  # Local/Visitante
+            1.0,  # Habilidad rebotes (baseline)
+            1.1,  # Habilidad asistencias (Giddey es buen pasador)
+            1.05  # Habilidad puntos
+        ]])
         
-        def calculate_ev(win_prob, decimal_odds):
-            """Calculate Expected Value"""
-            lose_prob = 1 - win_prob
-            ev = (win_prob * (decimal_odds - 1)) - (lose_prob * 1)
-            return ev
+        # Escalar características
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(self.X_hist)
+        X_input_scaled = scaler.transform(X_input)
         
-        bets = {
-            "isu_spread": {
-                "win_prob": ml_ensemble["consensus"]["isu_cover_prob"] / 100,
-                "odds": -110,
-                "type": "spread"
-            },
-            "eiu_spread": {
-                "win_prob": 1 - (ml_ensemble["consensus"]["isu_cover_prob"] / 100),
-                "odds": 110,
-                "type": "spread"
-            },
-            "over": {
-                "win_prob": ml_ensemble["consensus"]["over_prob"] / 100,
-                "odds": -110,
-                "type": "total"
-            },
-            "under": {
-                "win_prob": 1 - (ml_ensemble["consensus"]["over_prob"] / 100),
-                "odds": -110,
-                "type": "total"
-            }
+        # Modelos de regresión lineal (simplificado)
+        model_reb = LinearRegression()
+        model_ast = LinearRegression()
+        model_pts = LinearRegression()
+        
+        model_reb.fit(X_scaled, self.y_reb_hist)
+        model_ast.fit(X_scaled, self.y_ast_hist)
+        model_pts.fit(X_scaled, self.y_pts_hist)
+        
+        # Predicciones
+        xReb = model_reb.predict(X_input_scaled)[0]
+        xAssists = model_ast.predict(X_input_scaled)[0]
+        xPoints = model_pts.predict(X_input_scaled)[0]
+        
+        # Ajustar por factores específicos
+        xReb *= self.jugador['off_reb_adj'] * self.jugador['def_reb_adj']
+        xAssists *= self.jugador['pace_adj']
+        xPoints *= self.jugador['points_adj']
+        
+        return {
+            'xRebound': round(max(0, xReb), 1),
+            'xAssists': round(max(0, xAssists), 1),
+            'xPoints': round(max(0, xPoints), 1)
+        }
+    
+    def expected_value_plus(self):
+        """Método 4: Expected Value Plus con factores contextuales."""
+        # Obtener estimaciones base de otros métodos
+        calidad = self.estimacion_calidad()
+        lineal = self.regresion_lineal()
+        ml = self.machine_learning()
+        
+        # Factores contextuales adicionales
+        oponente = self.estadisticas_equipos[self.jugador['oponente']]
+        propio = self.estadisticas_equipos[self.jugador['equipo']]
+        
+        # 1. Factor de ritmo del juego
+        factor_ritmo = self.jugador['pace_adj']
+        
+        # 2. Factor de eficiencia defensiva del oponente
+        # NO tiene peor defensa (58.2% eFG permitido) vs CHI (55.1%)
+        factor_def_efg = (oponente['def_efg'] - 0.54) * 10  # Desviación del promedio
+        
+        # 3. Factor de rebotes
+        # NO permite 23.7% de rebotes ofensivos, CHI 27.5%
+        factor_reb_def = (oponente['def_reb_pct'] - 0.75) * 4  # 75% es promedio defensivo
+        
+        # 4. Factor de asistencias
+        # CHI da 28.5 asistencias, NO permite 28.5 asistencias
+        factor_ast = (propio['assists_game'] / 26.5)  # 26.5 es promedio
+        
+        # Calcular EV+ con pesos
+        peso_calidad = 0.25
+        peso_lineal = 0.25
+        peso_ml = 0.50
+        
+        xRebound = (
+            peso_calidad * calidad['xRebound'] +
+            peso_lineal * lineal['xRebound'] +
+            peso_ml * ml['xRebound']
+        ) * (1 + 0.1 * factor_reb_def) * factor_ritmo
+        
+        xAssists = (
+            peso_calidad * calidad['xAssists'] +
+            peso_lineal * lineal['xAssists'] +
+            peso_ml * ml['xAssists']
+        ) * factor_ast * factor_ritmo
+        
+        xPoints = (
+            peso_calidad * calidad['xPoints'] +
+            peso_lineal * lineal['xPoints'] +
+            peso_ml * ml['xPoints']
+        ) * (1 - 0.05 * factor_def_efg) * factor_ritmo * self.jugador['home_adj']
+        
+        return {
+            'xRebound': round(xRebound, 1),
+            'xAssists': round(xAssists, 1),
+            'xPoints': round(xPoints, 1)
+        }
+    
+    def calcular_promedio_ponderado(self):
+        """Calcula el promedio ponderado de todas las metodologías."""
+        # Obtener todas las predicciones
+        resultados = {
+            'Calidad': self.estimacion_calidad(),
+            'Lineal': self.regresion_lineal(),
+            'ML': self.machine_learning(),
+            'EV+': self.expected_value_plus()
         }
         
-        ev_results = {}
-        for bet_name, bet_info in bets.items():
-            decimal_odds = american_to_decimal(bet_info["odds"])
-            ev = calculate_ev(bet_info["win_prob"], decimal_odds)
-            
-            ev_results[bet_name] = {
-                "win_probability": round(bet_info["win_prob"] * 100, 1),
-                "decimal_odds": round(decimal_odds, 2),
-                "ev": round(ev * 100, 1),  # As percentage
-                "recommendation": "STRONG BET" if ev > 0.05 else "VALUE BET" if ev > 0 else "NO VALUE" if ev > -0.05 else "AVOID"
-            }
+        # Pesos para cada metodología
+        pesos = {'Calidad': 0.20, 'Lineal': 0.25, 'ML': 0.30, 'EV+': 0.25}
         
-        return ev_results
-    
-    def four_factors_analysis(self) -> Dict:
-        """Calculate Dean Oliver's Four Factors"""
-        four_factors = {}
+        # Calcular promedios ponderados
+        xRebound_total = 0
+        xAssists_total = 0
+        xPoints_total = 0
         
-        for team in ["EIU", "ISU"]:
-            stats = self.data["teams"][team]
-            
-            # Four Factors calculation
-            factors = {
-                "effective_fg": stats["offensive_stats"]["effective_fg_percent"],
-                "turnover_rate": stats["offensive_stats"]["turnover_percent"],
-                "off_rebound_rate": stats["offensive_stats"]["off_rebound_percent"],
-                "ft_rate": stats["offensive_stats"]["fta_per_fga"] * 100
-            }
-            
-            # Weighted Four Factors score (scale 0-100)
-            weighted_score = (
-                factors["effective_fg"] * 0.4 +
-                (100 - factors["turnover_rate"]) * 0.25 +
-                factors["off_rebound_rate"] * 0.2 +
-                factors["ft_rate"] * 0.15
-            )
-            
-            four_factors[team] = {
-                "factors": {k: round(v, 1) for k, v in factors.items()},
-                "weighted_score": round(weighted_score, 1),
-                "advantage": {}
-            }
+        for metodo, peso in pesos.items():
+            xRebound_total += resultados[metodo]['xRebound'] * peso
+            xAssists_total += resultados[metodo]['xAssists'] * peso
+            xPoints_total += resultados[metodo]['xPoints'] * peso
         
-        # Calculate advantages
-        for factor in ["effective_fg", "turnover_rate", "off_rebound_rate", "ft_rate"]:
-            eiu_val = four_factors["EIU"]["factors"][factor]
-            isu_val = four_factors["ISU"]["factors"][factor]
-            
-            # For turnover rate, lower is better
-            if factor == "turnover_rate":
-                advantage = eiu_val - isu_val  # Negative means ISU better
-                winner = "ISU" if advantage < 0 else "EIU"
-            else:
-                advantage = isu_val - eiu_val
-                winner = "ISU" if advantage > 0 else "EIU"
-            
-            four_factors["EIU"]["advantage"][factor] = round(advantage, 1) if winner == "EIU" else 0
-            four_factors["ISU"]["advantage"][factor] = round(abs(advantage), 1) if winner == "ISU" else 0
-        
-        return four_factors
-    
-    def kelly_criterion(self, ev_results: Dict) -> Dict:
-        """Calculate Kelly Criterion bet sizing"""
-        kelly_bets = {}
-        
-        for bet_name, bet_info in ev_results.items():
-            p = bet_info["win_probability"] / 100
-            q = 1 - p
-            b = bet_info["decimal_odds"] - 1
-            
-            # Kelly formula: f* = (bp - q) / b
-            if b > 0:
-                kelly_fraction = (b * p - q) / b
-            else:
-                kelly_fraction = 0
-            
-            # Half-Kelly for conservative betting
-            half_kelly = kelly_fraction / 2
-            
-            kelly_bets[bet_name] = {
-                "kelly_fraction": round(kelly_fraction * 100, 1),
-                "half_kelly": round(half_kelly * 100, 1),
-                "bet_size_1k": round(half_kelly * 1000, 0),
-                "recommended_action": "BET" if half_kelly > 0.02 else "SMALL BET" if half_kelly > 0 else "NO BET"
-            }
-        
-        return kelly_bets
-    
-    def final_prediction(self) -> Dict:
-        """Generate final prediction combining all models"""
-        quality = self.calculate_estimated_quality()
-        regression = self.linear_regression_prediction()
-        ensemble = self.machine_learning_ensemble()
-        ev = self.calculate_ev_plus()
-        four_factors = self.four_factors_analysis()
-        
-        # Consensus prediction
-        consensus_margin = regression["predicted_margin"]
-        consensus_total = regression["predicted_total"]
-        
-        # Adjust for Vegas line
-        vegas_spread = -40.5
-        vegas_total = 144.5
-        
-        prediction = {
-            "predicted_winner": "Iowa State",
-            "predicted_margin": round(consensus_margin, 1),
-            "predicted_total": round(consensus_total, 1),
-            "against_spread": {
-                "prediction": f"Iowa State -{max(38.5, min(42.5, consensus_margin))}",
-                "confidence": ensemble["consensus"]["isu_cover_prob"],
-                "ev": ev["isu_spread"]["ev"]
-            },
-            "total_points": {
-                "prediction": "OVER" if consensus_total > vegas_total else "UNDER",
-                "confidence": ensemble["consensus"]["over_prob"],
-                "ev": ev["over"]["ev"]
-            },
-            "moneyline": {
-                "prediction": "Iowa State",
-                "implied_probability": round(1 / (1 + np.exp(-consensus_margin/15)) * 100, 1)
-            },
-            "model_consensus": {
-                "confidence": round(np.mean([
-                    ensemble["consensus"]["isu_cover_prob"],
-                    quality["ISU"]["overall_score"],
-                    four_factors["ISU"]["weighted_score"]
-                ]), 1),
-                "model_count": 6,
-                "agreement_level": "HIGH" if ensemble["consensus"]["isu_cover_prob"] > 80 else "MEDIUM"
-            },
-            "best_bets": []
+        return {
+            'xRebound': round(xRebound_total, 1),
+            'xAssists': round(xAssists_total, 1),
+            'xPoints': round(xPoints_total, 1),
+            'desglose': resultados
         }
-        
-        # Determine best bets based on EV+
-        for bet_name, bet_info in ev.items():
-            if bet_info["ev"] > 5:  # EV+ > 5%
-                prediction["best_bets"].append({
-                    "bet": bet_name.replace("_", " ").upper(),
-                    "ev": bet_info["ev"],
-                    "confidence": bet_info["win_probability"],
-                    "recommendation": bet_info["recommendation"]
-                })
-        
-        return prediction
     
-    def generate_report(self) -> Dict:
-        """Generate comprehensive analysis report"""
-        print("=" * 80)
-        print("ADVANCED BASKETBALL ANALYTICS REPORT")
-        print("=" * 80)
-        print(f"Game: {self.data['teams']['EIU']['name']} vs {self.data['teams']['ISU']['name']}")
-        print(f"Date: {self.data['metadata']['date']}")
-        print(f"Location: {self.data['metadata']['location']}")
-        print("=" * 80)
+    def imprimir_resultados(self):
+        """Imprime los resultados del pronóstico."""
+        print("=" * 60)
+        print(f"PRONÓSTICO DE ESTADÍSTICAS - {self.jugador['nombre']}")
+        print(f"VS {self.jugador['oponente']} | {self.jugador['minutos_estimados']} MIN ESTIMADOS")
+        print("=" * 60)
         
-        # 1. Estimated Quality
-        print("\n1. ESTIMATED TEAM QUALITY")
-        print("-" * 40)
-        quality = self.calculate_estimated_quality()
-        for team in ["EIU", "ISU"]:
-            q = quality[team]
-            print(f"{self.data['teams'][team]['name']}:")
-            print(f"  Overall Score: {q['overall_score']}/100")
-            print(f"  Offensive: {q['offensive_score']}/100")
-            print(f"  Defensive: {q['defensive_score']}/100")
+        resultados = self.calcular_promedio_ponderado()
         
-        # 2. Linear Regression
-        print("\n2. LINEAR REGRESSION PREDICTION")
-        print("-" * 40)
-        regression = self.linear_regression_prediction()
-        print(f"Predicted Score: ISU {regression['ISU_predicted_score']} - EIU {regression['EIU_predicted_score']}")
-        print(f"Predicted Margin: ISU by {regression['predicted_margin']}")
-        print(f"Predicted Total: {regression['predicted_total']}")
-        print(f"Model Confidence: {regression['confidence']}%")
+        print(f"\nRESULTADOS FINALES (Promedio Ponderado):")
+        print(f"  xRebound (Rebotes esperados): {resultados['xRebound']}")
+        print(f"  xAssists (Asistencias esperadas): {resultados['xAssists']}")
+        print(f"  xPoints (Puntos esperados): {resultados['xPoints']}")
         
-        # 3. Machine Learning Ensemble
-        print("\n3. MACHINE LEARNING ENSEMBLE")
-        print("-" * 40)
-        ensemble = self.machine_learning_ensemble()
-        print(f"ISU Cover Probability: {ensemble['consensus']['isu_cover_prob']}%")
-        print(f"Over Probability: {ensemble['consensus']['over_prob']}%")
-        print("Model Breakdown:")
-        for model_name, model_data in ensemble["models"].items():
-            print(f"  {model_name.replace('_', ' ').title()}: {model_data['prob_isu_cover']*100:.1f}%")
+        print(f"\nDESGLOSE POR METODOLOGÍA:")
+        for metodo, stats in resultados['desglose'].items():
+            print(f"\n  {metodo}:")
+            print(f"    Rebotes: {stats['xRebound']}")
+            print(f"    Asistencias: {stats['xAssists']}")
+            print(f"    Puntos: {stats['xPoints']}")
         
-        # 4. EV+ Analysis
-        print("\n4. EXPECTED VALUE (EV+) ANALYSIS")
-        print("-" * 40)
-        ev = self.calculate_ev_plus()
-        for bet_name, bet_info in ev.items():
-            print(f"{bet_name.upper()}:")
-            print(f"  Win Probability: {bet_info['win_probability']}%")
-            print(f"  EV+: {bet_info['ev']}%")
-            print(f"  Recommendation: {bet_info['recommendation']}")
+        print(f"\nFACTORES DE AJUSTE APLICADOS:")
+        print(f"  Ventaja local: {self.jugador['home_adj']}")
+        print(f"  Ajuste de ritmo (PACE): {self.jugador['pace_adj']}")
+        print(f"  Ajuste rebotes ofensivos: {self.jugador['off_reb_adj']}")
+        print(f"  Ajuste rebotes defensivos: {self.jugador['def_reb_adj']}")
+        print(f"  Ajuste de puntos: {self.jugador['points_adj']}")
         
-        # 5. Four Factors
-        print("\n5. FOUR FACTORS ANALYSIS")
-        print("-" * 40)
-        four_factors = self.four_factors_analysis()
-        for team in ["EIU", "ISU"]:
-            print(f"\n{self.data['teams'][team]['name']}:")
-            factors = four_factors[team]["factors"]
-            print(f"  eFG%: {factors['effective_fg']}%")
-            print(f"  TOV%: {factors['turnover_rate']}%")
-            print(f"  ORB%: {factors['off_rebound_rate']}%")
-            print(f"  FTR: {factors['ft_rate']}")
-            print(f"  Weighted Score: {four_factors[team]['weighted_score']}/100")
-        
-        # 6. Kelly Criterion
-        print("\n6. KELLY CRITERION BET SIZING")
-        print("-" * 40)
-        kelly = self.kelly_criterion(ev)
-        for bet_name, bet_info in kelly.items():
-            print(f"{bet_name.upper()}:")
-            print(f"  Kelly Fraction: {bet_info['kelly_fraction']}%")
-            print(f"  Half-Kelly: {bet_info['half_kelly']}%")
-            print(f"  Bet Size ($1k): ${bet_info['bet_size_1k']}")
-            print(f"  Action: {bet_info['recommended_action']}")
-        
-        # 7. Final Prediction
-        print("\n7. FINAL PREDICTION & RECOMMENDATIONS")
-        print("-" * 40)
-        final = self.final_prediction()
-        print(f"Winner: {final['predicted_winner']}")
-        print(f"Margin: {final['predicted_margin']} points")
-        print(f"Total Points: {final['predicted_total']}")
-        print(f"\nAgainst Spread: {final['against_spread']['prediction']}")
-        print(f"  Confidence: {final['against_spread']['confidence']}%")
-        print(f"  EV+: {final['against_spread']['ev']}%")
-        print(f"\nTotal Points: {final['total_points']['prediction']}")
-        print(f"  Confidence: {final['total_points']['confidence']}%")
-        print(f"  EV+: {final['total_points']['ev']}%")
-        
-        print(f"\nModel Consensus Confidence: {final['model_consensus']['confidence']}%")
-        print(f"Number of Models: {final['model_consensus']['model_count']}")
-        
-        if final['best_bets']:
-            print("\n🎯 BEST BETS (EV+ > 5%):")
-            for bet in final['best_bets']:
-                print(f"  • {bet['bet']}: EV+ {bet['ev']}%, Confidence: {bet['confidence']}%")
-        
-        print("\n" + "=" * 80)
-        print("DISCLAIMER: For educational purposes only. Bet responsibly.")
-        print("=" * 80)
-        
-        # Export to JSON
-        report = {
-            "metadata": self.data["metadata"],
-            "estimated_quality": quality,
-            "linear_regression": regression,
-            "machine_learning_ensemble": ensemble,
-            "ev_analysis": ev,
-            "four_factors": four_factors,
-            "kelly_criterion": kelly,
-            "final_prediction": final,
-            "generated_at": datetime.now().isoformat(),
-            "version": "2.1"
-        }
-        
-        return report
-    
-    def export_to_json(self, filename: str = "advanced_analysis.json"):
-        """Export full analysis to JSON file"""
-        report = self.generate_report()
-        
-        # Remove print statements from report
-        export_report = {k: v for k, v in report.items() if not callable(v)}
-        
-        with open(filename, 'w') as f:
-            json.dump(export_report, f, indent=2, default=str)
-        
-        print(f"\n✅ Report exported to {filename}")
-        return export_report
+        print("\n" + "=" * 60)
 
-def main():
-    """Main execution function"""
-    analyzer = AdvancedBasketballAnalyzer()
-    
-    print("🚀 Starting Advanced Basketball Analysis...")
-    print("📊 Loading data and running models...\n")
-    
-    # Generate and display report
-    report = analyzer.generate_report()
-    
-    # Export to JSON
-    analyzer.export_to_json()
-    
-    # Generate summary for quick reference
-    print("\n" + "=" * 80)
-    print("QUICK SUMMARY FOR BETTING")
-    print("=" * 80)
-    
-    final_pred = analyzer.final_prediction()
-    print(f"\n🏆 WINNER: {final_pred['predicted_winner']}")
-    print(f"📏 PREDICTED MARGIN: {final_pred['predicted_margin']} points")
-    print(f"🎯 AGAINST SPREAD: {final_pred['against_spread']['prediction']}")
-    print(f"💰 TOTAL POINTS: {final_pred['predicted_total']} ({final_pred['total_points']['prediction']})")
-    print(f"📈 MODEL CONFIDENCE: {final_pred['model_consensus']['confidence']}%")
-    
-    if final_pred['best_bets']:
-        print("\n💎 RECOMMENDED BETS:")
-        for bet in final_pred['best_bets']:
-            print(f"  • {bet['bet']} ({bet['recommendation']})")
-    
-    print("\n" + "=" * 80)
-    
-    return report
-
+# Ejecutar el pronóstico
 if __name__ == "__main__":
-    main()
+    pronostico = PronosticoEstadisticas()
+    pronostico.imprimir_resultados()
+    
+    # Generar también un archivo CSV con los resultados
+    resultados = pronostico.calcular_promedio_ponderado()
+    
+    df_resultados = pd.DataFrame(resultados['desglose']).T
+    df_resultados.loc['PROMEDIO'] = [
+        resultados['xRebound'],
+        resultados['xAssists'],
+        resultados['xPoints']
+    ]
+    
+    df_resultados.columns = ['xRebound', 'xAssists', 'xPoints']
+    df_resultados.to_csv('pronostico_giddey.csv')
+    print("\nResultados guardados en 'pronostico_giddey.csv'")
